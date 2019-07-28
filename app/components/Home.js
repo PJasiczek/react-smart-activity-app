@@ -6,9 +6,11 @@ import {
   View,
   Image,
   TouchableOpacity,
-  Button
+  Button,
+  NativeModules
 } from "react-native";
 import Swiper from "react-native-swiper";
+import LinearGradient from "react-native-linear-gradient";
 
 export default class Home extends Component {
   static navigationOptions = {
@@ -18,86 +20,97 @@ export default class Home extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <Swiper
-          style={styles.wrapper}
-          showsButtons={false}
-          loop={false}
-          activeDotColor="#000000"
+        <LinearGradient
+          colors={["rgba(0,0,0,0.3)", "transparent"]}
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            height: "100%"
+          }}
         >
-          <View style={styles.slide1}>
-            <View style={styles.logo_container}>
+          <Swiper
+            style={styles.wrapper}
+            showsButtons={false}
+            loop={false}
+            activeDotColor="#000000"
+          >
+            <View style={styles.slide1}>
+              <View style={styles.logo_container}>
+                <Image
+                  style={styles.logo}
+                  source={require("../../assets/images/Logo.png")}
+                />
+                <Text style={styles.title}>
+                  Witaj w{" "}
+                  <Text
+                    style={{
+                      fontFamily: "Quicksand-Bold"
+                    }}
+                  >
+                    Smart Activity
+                  </Text>
+                  . To najlepsze miejsce dla miłośników aktywności sportowych.
+                </Text>
+              </View>
+            </View>
+            <View style={styles.slide2}>
               <Image
                 style={styles.logo}
-                source={require("../../assets/images/Logo.png")}
+                source={require("../../assets/images/Heartbeat.png")}
               />
-              <Text style={styles.title}>
-                Witaj w{" "}
-                <Text
-                  style={{
-                    fontFamily: "Quicksand-Bold"
-                  }}
-                >
-                  Smart Activity
-                </Text>
-                . To najlepsze miejsce dla miłośników aktywności sportowych.
+              <Text style={styles.header}>ZDROWIE</Text>
+              <Text style={styles.header_description}>
+                Wyświetlaj szczegółowe informacje o stanie zdrowia każdego dnia.
               </Text>
             </View>
-          </View>
-          <View style={styles.slide2}>
-            <Image
-              style={styles.logo}
-              source={require("../../assets/images/Heartbeat.png")}
-            />
-            <Text style={styles.header}>ZDROWIE</Text>
-            <Text style={styles.header_description}>
-              Wyświetlaj szczegółowe informacje o stanie zdrowia każdego dnia.
-            </Text>
-          </View>
-          <View style={styles.slide3}>
-            <Image
-              style={styles.logo}
-              source={require("../../assets/images/Smartwatch.png")}
-            />
-            <Text style={styles.header}>STATYSTYKI</Text>
-            <Text style={styles.header_description}>
-              Połącz swój smartwatch z aplikacją i poprawiaj swoje wyniki dzięki
-              porównaniu bieżących statystyk z każdego biegu{" "}
-            </Text>
-          </View>
-        </Swiper>
-        <View style={styles.buttons_container}>
-          <TouchableOpacity
-            onPress={() => this.props.navigation.navigate("Registration")}
-            style={styles.button_container}
-          >
-            <Text style={styles.button_text}>DOŁĄCZ TERAZ</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => this.props.navigation.navigate("Login")}
-            style={{
-              width: 160,
-              backgroundColor: "#000000",
-              borderWidth: 1,
-              borderRadius: 3,
-              marginLeft: 5,
-              marginRight: 5,
-              paddingVertical: 10,
-              marginBottom: 20
-            }}
-          >
-            <Text
+            <View style={styles.slide3}>
+              <Image
+                style={styles.logo}
+                source={require("../../assets/images/Smartwatch.png")}
+              />
+              <Text style={styles.header}>STATYSTYKI</Text>
+              <Text style={styles.header_description}>
+                Połącz swój smartwatch z aplikacją i poprawiaj swoje wyniki
+                dzięki porównaniu bieżących statystyk z każdego biegu{" "}
+              </Text>
+            </View>
+          </Swiper>
+          <View style={styles.buttons_container}>
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate("Registration")}
+              style={styles.button_container}
+            >
+              <Text style={styles.button_text}>DOŁĄCZ TERAZ</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate("Login")}
               style={{
-                textAlign: "center",
-                fontFamily: "Quicksand-Bold",
-                fontSize: 13,
-                color: "#ffffff",
-                fontWeight: "700"
+                width: 160,
+                backgroundColor: "#000000",
+                borderWidth: 1,
+                borderRadius: 3,
+                marginLeft: 5,
+                marginRight: 5,
+                paddingVertical: 10,
+                marginBottom: 20
               }}
             >
-              ZALOGUJ SIĘ
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontFamily: "Quicksand-Bold",
+                  fontSize: 13,
+                  color: "#ffffff",
+                  fontWeight: "700"
+                }}
+              >
+                ZALOGUJ SIĘ
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
       </View>
     );
   }

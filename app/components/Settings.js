@@ -1,45 +1,630 @@
-import React, { Component } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import MapView, {
-  Marker,
-  AnimatedRegion,
-  Polyline,
-  PROVIDER_GOOGLE
-} from "react-native-maps";
+import React from "react";
+import {
+  StyleSheet,
+  Platform,
+  ScrollView,
+  Switch,
+  Text,
+  SafeAreaView,
+  View,
+  ActivityIndicator,
+  Modal
+} from "react-native";
+import Toast from "@remobile/react-native-toast";
+import BluetoothSerial, {
+  withSubscription
+} from "react-native-bluetooth-serial-next";
+import { Buffer } from "buffer";
 
-export default class Settings extends Component {
-  static navigationOptions = {
-    header: null
+import Button from "./Button";
+import DeviceList from "./DeviceList";
+
+global.Buffer = Buffer;
+
+const iconv = require("iconv-lite");
+
+class Settings extends React.Component {
+  constructor(props) {
+    super(props);
+    this.events = null;
+    this.state = {
+      isEnabled: false,
+      device: null,
+      devices: [],
+      scanning: false,
+      processing: false
+    };
+  }
+
+  async componentDidMount() {
+    this.events = this.props.events;
+
+    try {
+      const [isEnabled, devices] = await Promise.all([
+        BluetoothSerial.isEnabled(),
+        BluetoothSerial.list()
+      ]);
+
+      this.setState({
+        isEnabled,
+        devices: devices.map(device => ({
+          ...device,
+          paired: true,
+          connected: false
+        }))
+      });
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+    }
+
+    this.events.on("bluetoothEnabled", () => {
+      Toast.showShortBottom("Widoczność Bluetooth włączona.");
+      this.setState({ isEnabled: true });
+    });
+
+    this.events.on("bluetoothDisabled", () => {
+      Toast.showShortBottom("Widoczność Bluetooth wyłączona.");
+      this.setState({ isEnabled: false });
+    });
+
+    this.events.on("connectionSuccess", ({ device }) => {
+      if (device) {
+        Toast.showShortBottom(
+          `Pomyślnie połączono z urządzeniem ${device.name}<${device.id}>`
+        );
+      }
+    });
+
+    this.events.on("connectionFailed", ({ device }) => {
+      if (device) {
+        Toast.showShortBottom(
+          `Błąd połączenia z urządzeniem ${device.name}<${device.id}>`
+        );
+      }
+    });
+
+    this.events.on("connectionLost", ({ device }) => {
+      if (device) {
+        Toast.showShortBottom(
+          `Utracono połączenie z urządzeniem ${device.name}<${device.id}>`
+        );
+      }
+    });
+
+    this.events.on("data", result => {
+      if (result) {
+        const { id, data } = result;
+        console.log(`Data from device ${id} : ${data}`);
+      }
+    });
+
+    this.events.on("error", e => {
+      if (e) {
+        console.log(`Error: ${e.message}`);
+        Toast.showShortBottom(e.message);
+      }
+    });
+  }
+
+  requestEnable = () => async () => {
+    try {
+      await BluetoothSerial.requestEnable();
+      this.setState({ isEnabled: true });
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+    }
   };
-  getMapRegion = () => ({
-    latitude: 24,
-    longitude: 24,
-    latitudeDelta: 0.09,
-    longitudeDelta: 0.09
-  });
-  render() {
+
+  toggleBluetooth = async value => {
+    try {
+      if (value) {
+        await BluetoothSerial.enable();
+      } else {
+        await BluetoothSerial.disable();
+      }
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+    }
+  };
+
+  listDevices = async () => {
+    try {
+      const list = await BluetoothSerial.list();
+
+      this.setState(({ devices }) => ({
+        devices: devices.map(device => {
+          const found = list.find(v => v.id === device.id);
+
+          if (found) {
+            return {
+              ...found,
+              paired: true,
+              connected: false
+            };
+          }
+
+          return device;
+        })
+      }));
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+    }
+  };
+
+  discoverUnpairedDevices = async () => {
+    this.setState({ scanning: true });
+
+    try {
+      const unpairedDevices = await BluetoothSerial.listUnpaired();
+
+      this.setState(({ devices }) => ({
+        scanning: false,
+        devices: devices
+          .map(device => {
+            const found = unpairedDevices.find(d => d.id === device.id);
+
+            if (found) {
+              return {
+                ...device,
+                ...found,
+                connected: false,
+                paired: false
+              };
+            }
+
+            return device.paired || device.connected ? device : null;
+          })
+          .map(v => v)
+      }));
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+
+      this.setState(({ devices }) => ({
+        scanning: false,
+        devices: devices.filter(device => device.paired || device.connected)
+      }));
+    }
+  };
+
+  cancelDiscovery = () => async () => {
+    try {
+      await BluetoothSerial.cancelDiscovery();
+      this.setState({ scanning: false });
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+    }
+  };
+
+  toggleDevicePairing = async ({ id, paired }) => {
+    if (paired) {
+      await this.unpairDevice(id);
+    } else {
+      await this.pairDevice(id);
+    }
+  };
+
+  pairDevice = async id => {
+    this.setState({ processing: true });
+
+    try {
+      const paired = await BluetoothSerial.pairDevice(id);
+
+      if (paired) {
+        Toast.showShortBottom(
+          `Parowanie urządzenia ${paired.name}<${paired.id}> powiodło się`
+        );
+
+        this.setState(({ devices, device }) => ({
+          processing: false,
+          device: {
+            ...device,
+            ...paired,
+            paired: true
+          },
+          devices: devices.map(v => {
+            if (v.id === paired.id) {
+              return {
+                ...v,
+                ...paired,
+                paired: true
+              };
+            }
+
+            return v;
+          })
+        }));
+      } else {
+        Toast.showShortBottom(`Parowanie urządzenia <${id}> nie powiodło się`);
+        this.setState({ processing: false });
+      }
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+      this.setState({ processing: false });
+    }
+  };
+
+  unpairDevice = async id => {
+    this.setState({ processing: true });
+
+    try {
+      const unpaired = await BluetoothSerial.unpairDevice(id);
+
+      if (unpaired) {
+        Toast.showShortBottom(
+          `Odparowanie urządzenia ${unpaired.name}<${unpaired.id}> powiodło się`
+        );
+
+        this.setState(({ devices, device }) => ({
+          processing: false,
+          device: {
+            ...device,
+            ...unpaired,
+            connected: false,
+            paired: false
+          },
+          devices: devices.map(v => {
+            if (v.id === unpaired.id) {
+              return {
+                ...v,
+                ...unpaired,
+                connected: false,
+                paired: false
+              };
+            }
+
+            return v;
+          })
+        }));
+      } else {
+        Toast.showShortBottom(
+          `Odparowanie urządzenia <${id}> nie powiodło się`
+        );
+        this.setState({ processing: false });
+      }
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+      this.setState({ processing: false });
+    }
+  };
+
+  toggleDeviceConnection = async ({ id, connected }) => {
+    if (connected) {
+      await this.disconnect(id);
+    } else {
+      await this.connect(id);
+    }
+  };
+
+  connect = async id => {
+    this.setState({ processing: true });
+
+    try {
+      const connected = await BluetoothSerial.device(id).connect();
+
+      if (connected) {
+        Toast.showShortBottom(
+          `Połączono z urządzeniem ${connected.name}<${connected.id}>`
+        );
+
+        this.setState(({ devices, device }) => ({
+          processing: false,
+          device: {
+            ...device,
+            ...connected,
+            connected: true
+          },
+          devices: devices.map(v => {
+            if (v.id === connected.id) {
+              return {
+                ...v,
+                ...connected,
+                connected: true
+              };
+            }
+
+            return v;
+          })
+        }));
+      } else {
+        Toast.showShortBottom(`Nie udało się połączyć z urządzeniem <${id}>`);
+        this.setState({ processing: false });
+      }
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+      this.setState({ processing: false });
+    }
+  };
+
+  disconnect = async id => {
+    this.setState({ processing: true });
+
+    try {
+      await BluetoothSerial.device(id).disconnect();
+
+      this.setState(({ devices, device }) => ({
+        processing: false,
+        device: {
+          ...device,
+          connected: false
+        },
+        devices: devices.map(v => {
+          if (v.id === id) {
+            return {
+              ...v,
+              connected: false
+            };
+          }
+
+          return v;
+        })
+      }));
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+      this.setState({ processing: false });
+    }
+  };
+
+  write = async (id, message) => {
+    try {
+      await BluetoothSerial.device(id).write(message);
+      Toast.showShortBottom("Pomyślnie wysłano wiadomość do urządzenia");
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+    }
+  };
+
+  writePackets = async (id, message, packetSize = 64) => {
+    try {
+      const device = BluetoothSerial.device(id);
+      const toWrite = iconv.encode(message, "cp852");
+      const writePromises = [];
+      const packetCount = Math.ceil(toWrite.length / packetSize);
+
+      Toast.showShortBottom(`Message: <${message}>`);
+
+      for (var i = 0; i < packetCount; i++) {
+        const packet = new Buffer(packetSize);
+        packet.fill(" ");
+        toWrite.copy(packet, 0, i * packetSize, (i + 1) * packetSize);
+        writePromises.push(device.write(packet));
+      }
+
+      await Promise.all(writePromises).then(() =>
+        Toast.showShortBottom("Writed packets")
+      );
+    } catch (e) {
+      Toast.showShortBottom(e.message);
+    }
+  };
+
+  renderModal = (device, processing) => {
+    if (!device) return null;
+
+    const { id, name, paired, connected } = device;
+
     return (
-      <View style={styles.container}>
-        <MapView
-          style={styles.map}
-          provider={PROVIDER_GOOGLE}
-          showUserLocation
-          followUserLocation
-          loadingEnabled
-          region={this.getMapRegion()}
-        />
-      </View>
+      <Modal
+        animationType="fade"
+        transparent={false}
+        visible={true}
+        onRequestClose={() => {}}
+      >
+        {device ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>{name}</Text>
+            <Text style={{ fontSize: 14 }}>{`<${id}>`}</Text>
+
+            {processing && (
+              <ActivityIndicator
+                style={{ marginTop: 15 }}
+                size={Platform.OS === "ios" ? 1 : 60}
+              />
+            )}
+
+            {!processing && (
+              <View style={{ marginTop: 20, width: "50%" }}>
+                {Platform.OS !== "ios" && (
+                  <Button
+                    title={paired ? "Unpair" : "Pair"}
+                    style={{
+                      backgroundColor: "#22509d"
+                    }}
+                    textStyle={{ color: "#fff" }}
+                    onPress={() => this.toggleDevicePairing(device)}
+                  />
+                )}
+                <Button
+                  title={connected ? "Disconnect" : "Connect"}
+                  style={{
+                    backgroundColor: "#22509d"
+                  }}
+                  textStyle={{ color: "#fff" }}
+                  onPress={() => this.toggleDeviceConnection(device)}
+                />
+                {connected && (
+                  <React.Fragment>
+                    <Button
+                      title="Write"
+                      style={{
+                        backgroundColor: "#22509d"
+                      }}
+                      textStyle={{ color: "#fff" }}
+                      onPress={() =>
+                        this.write(
+                          id,
+                          "This is the test message\r\nDoes it work?\r\nTell me it works!\r\n"
+                        )
+                      }
+                    />
+                    <Button
+                      title="Write packets"
+                      style={{
+                        backgroundColor: "#22509d"
+                      }}
+                      textStyle={{ color: "#ffffff" }}
+                      onPress={() =>
+                        this.writePackets(
+                          id,
+                          "This is the test message\r\nDoes it work?\r\nTell me it works!\r\n"
+                        )
+                      }
+                    />
+                  </React.Fragment>
+                )}
+                <Button
+                  title="Close"
+                  onPress={() => this.setState({ device: null })}
+                />
+              </View>
+            )}
+          </View>
+        ) : null}
+      </Modal>
+    );
+  };
+
+  render() {
+    const { isEnabled, device, devices, scanning, processing } = this.state;
+
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.topBar}>
+          <Text style={styles.heading}>Bluetooth</Text>
+          <View style={styles.enableInfoWrapper}>
+            <Switch onValueChange={this.toggleBluetooth} value={isEnabled} />
+          </View>
+        </View>
+
+        {scanning ? (
+          isEnabled && (
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              <ActivityIndicator
+                style={{ marginBottom: 15 }}
+                size={Platform.OS === "ios" ? 1 : 60}
+              />
+              <Button
+                textStyle={{ color: "#fff" }}
+                style={styles.buttonRaised}
+                title="Anuluj"
+                onPress={this.cancelDiscovery}
+              />
+            </View>
+          )
+        ) : (
+          <React.Fragment>
+            {this.renderModal(device, processing)}
+            <DeviceList
+              devices={devices}
+              onDevicePressed={device => this.setState({ device })}
+              onRefresh={this.listDevices}
+            />
+          </React.Fragment>
+        )}
+
+        <View style={styles.footer}>
+          <ScrollView horizontal contentContainerStyle={styles.fixedFooter}>
+            {isEnabled && (
+              <Button title="Szukaj" onPress={this.discoverUnpairedDevices} />
+            )}
+            {!isEnabled && (
+              <Button title="Wyszukaj" onPress={this.requestEnable} />
+            )}
+          </ScrollView>
+        </View>
+      </SafeAreaView>
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "flex-end",
+    flex: 0.9,
+    backgroundColor: "#f5fcff"
+  },
+  topBar: {
+    height: 56,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    elevation: 6,
+    backgroundColor: "#ffffff"
+  },
+  heading: {
+    fontWeight: "bold",
+    fontSize: 16,
+    alignSelf: "center",
+    color: "#777777"
+  },
+  enableInfoWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center"
   },
-  map: {
-    ...StyleSheet.absoluteFillObject
+  listContainer: {
+    borderColor: "#ccc",
+    borderTopWidth: 0.5
+  },
+  listItem: {
+    flex: 1,
+    height: "auto",
+    paddingHorizontal: 16,
+    borderColor: "#ccc",
+    borderBottomWidth: 0.5,
+    justifyContent: "center",
+    paddingTop: 15,
+    paddingBottom: 15
+  },
+  listItemStatus: {
+    paddingLeft: 5,
+    paddingRight: 5,
+    paddingTop: 2,
+    paddingBottom: 2,
+    fontWeight: "bold",
+    fontSize: 12,
+    color: "#fff"
+  },
+  footer: {
+    height: 52,
+    borderTopWidth: 1,
+    borderTopColor: "#999"
+  },
+  fixedFooter: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#ddd"
+  },
+  button: {
+    height: 36,
+    margin: 5,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  buttonText: {
+    color: "#22509d",
+    fontWeight: "bold",
+    fontSize: 14
+  },
+  buttonRaised: {
+    backgroundColor: "#22509d",
+    borderRadius: 2,
+    elevation: 2
   }
 });
+
+export default withSubscription({ subscriptionName: "events" })(Settings);

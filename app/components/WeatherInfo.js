@@ -27,10 +27,17 @@ const WeatherInfo = ({
         <View style={styles.weather_container}>
           <View style={styles.weather_condition_container}>
             <View style={styles.weather_top_container}>
-              <Image
-                source={weatherConditions[id].icon_night}
-                style={{ width: 125, height: 125 }}
-              />
+              {isDay == 0 ? (
+                <Image
+                  source={weatherConditions[id].icon_night}
+                  style={{ width: 125, height: 125 }}
+                />
+              ) : (
+                <Image
+                  source={weatherConditions[id].icon_day}
+                  style={{ width: 125, height: 125 }}
+                />
+              )}
             </View>
             <Text style={styles.weather_temperature}>{temperature} °C</Text>
           </View>
@@ -240,7 +247,7 @@ const styles = StyleSheet.create({
   weather_temperature: {
     color: "#000000",
     fontFamily: "Quicksand-Light",
-    fontSize: 65
+    fontSize: 50
   },
   weather_condition_icon: {
     color: "#000000",

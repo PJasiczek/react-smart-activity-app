@@ -10,6 +10,7 @@ import {
   Alert,
   Animated
 } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 
 export default class Login extends Component {
   static navigationOptions = {
@@ -57,69 +58,80 @@ export default class Login extends Component {
 
   render() {
     return (
-      <KeyboardAvoidingView behavior="padding" style={styles.container}>
-        <View style={styles.logo_container}>
-          <Image
-            style={styles.logo}
-            source={require("../../assets/images/Logo.png")}
+      <LinearGradient
+        colors={["rgba(0,0,0,0.3)", "transparent"]}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          height: "100%"
+        }}
+      >
+        <KeyboardAvoidingView behavior="padding" style={styles.container}>
+          <View style={styles.logo_container}>
+            <Image
+              style={styles.logo}
+              source={require("../../assets/images/Logo.png")}
+            />
+            <Text style={styles.title}>
+              KONTO UMOŻLIWIAJĄCE DOSTĘP DO WSZYSTKICH USŁUG SMART ACTIVITY
+            </Text>
+          </View>
+          <TextInput
+            placeholder="Nazwa użytkownika"
+            placeholderTextColor="rgba(0,0,0,0.7)"
+            returKeyType="next"
+            onSubmitEditing={() => this.passwordInput.focus()}
+            onChangeText={UserUserName => this.setState({ UserUserName })}
+            style={styles.input}
           />
-          <Text style={styles.title}>
-            KONTO UMOŻLIWIAJĄCE DOSTĘP DO WSZYSTKICH USŁUG SMART ACTIVITY
-          </Text>
-        </View>
-        <TextInput
-          placeholder="Nazwa użytkownika"
-          placeholderTextColor="rgba(0,0,0,0.7)"
-          returKeyType="next"
-          onSubmitEditing={() => this.passwordInput.focus()}
-          onChangeText={UserUserName => this.setState({ UserUserName })}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Hasło"
-          placeholderTextColor="rgba(0,0,0,0.7)"
-          secureTextEntry
-          returKeyType="go"
-          ref={input => (this.passwordInput = input)}
-          onChangeText={UserPassword => this.setState({ UserPassword })}
-          style={styles.input}
-        />
-        <TouchableOpacity
-          onPress={() => this.props.navigation.navigate("UserHome")}
-          //onPress={this.UserLoginFunction}
-          style={{
-            backgroundColor: "#000000",
-            borderWidth: 1,
-            alignItems: "center",
-            borderRadius: 3,
-            marginLeft: 5,
-            marginRight: 5,
-            paddingVertical: 10,
-            marginBottom: 10
-          }}
-        >
-          <Text
+          <TextInput
+            placeholder="Hasło"
+            placeholderTextColor="rgba(0,0,0,0.7)"
+            secureTextEntry
+            returKeyType="go"
+            ref={input => (this.passwordInput = input)}
+            onChangeText={UserPassword => this.setState({ UserPassword })}
+            style={styles.input}
+          />
+          <TouchableOpacity
+            onPress={() => this.props.navigation.navigate("UserHome")}
+            //onPress={this.UserLoginFunction}
             style={{
-              textAlign: "center",
-              fontFamily: "Quicksand-Bold",
-              fontSize: 13,
-              color: "#ffffff",
-              fontWeight: "700"
+              backgroundColor: "#000000",
+              borderWidth: 1,
+              alignItems: "center",
+              borderRadius: 3,
+              marginLeft: 5,
+              marginRight: 5,
+              paddingVertical: 10,
+              marginBottom: 10
             }}
           >
-            ZALOGUJ SIĘ
+            <Text
+              style={{
+                textAlign: "center",
+                fontFamily: "Quicksand-Bold",
+                fontSize: 13,
+                color: "#ffffff",
+                fontWeight: "700"
+              }}
+            >
+              ZALOGUJ SIĘ
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.adding}>
+            Nie jesteś jeszcze członkiem?{" "}
+            <Text
+              onPress={() => this.props.navigation.navigate("Registration")}
+              style={styles.adding_link}
+            >
+              Dołącz teraz
+            </Text>
           </Text>
-        </TouchableOpacity>
-        <Text style={styles.adding}>
-          Nie jesteś jeszcze członkiem?{" "}
-          <Text
-            onPress={() => this.props.navigation.navigate("Registration")}
-            style={styles.adding_link}
-          >
-            Dołącz teraz
-          </Text>
-        </Text>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
     );
   }
 }
@@ -128,7 +140,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     flex: 1,
-    backgroundColor: "#fff"
+    backgroundColor: "transparent"
   },
   logo: {
     width: 100,
@@ -153,9 +165,9 @@ const styles = StyleSheet.create({
   title: {
     color: "#000000",
     fontFamily: "Quicksand-Bold",
-    fontSize: 15,
+    fontSize: 16,
     marginTop: 5,
-    width: 290,
+    width: 320,
     textAlign: "center",
     opacity: 0.9
   },

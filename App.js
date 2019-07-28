@@ -5,6 +5,7 @@ import { createStackNavigator, createAppContainer } from "react-navigation";
 import Home from "./app/components/Home";
 import Login from "./app/components/Login";
 import Registration from "./app/components/Registration";
+import CreateAccount from "./app/components/CreateAccount";
 import UserHome from "./app/components/UserHome";
 
 const Navigation = createStackNavigator({
@@ -16,6 +17,9 @@ const Navigation = createStackNavigator({
   },
   Registration: {
     screen: Registration
+  },
+  CreateAccount: {
+    screen: CreateAccount
   },
   UserHome: {
     screen: UserHome

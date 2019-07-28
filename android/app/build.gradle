@@ -196,8 +196,13 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-image-picker')
+    compile project(':react-native-bluetooth-serial-next')
+    implementation project(':react-native-ble-manager')
     implementation project(':react-native-maps')
     implementation project(':react-native-location')
+    implementation project(':react-native-linear-gradient')
+    compile project(':react-native-toast')
     implementation project(':react-native-svg')
     implementation project(':react-native-vector-icons')
     implementation project(':react-native-gesture-handler')

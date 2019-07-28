@@ -58,6 +58,7 @@ export default class ActivityInfo extends Component {
       weather_condition: null,
       weather_condition_description: null,
       sunset: 0,
+      dateTimestamp: 0,
       error: null
     };
   }
@@ -70,12 +71,9 @@ export default class ActivityInfo extends Component {
 
     this.fetchWeather();
 
-    var t = new Date(this.state.sunset);
-    var formatted = moment(t).format("MM/DD/YYYY");
-
     that.setState({
       date: now.format("LL"),
-      isDay: this.state.sunset
+      dateTimestamp: now.unix()
     });
   }
 
@@ -103,7 +101,11 @@ export default class ActivityInfo extends Component {
               cloudy: responseJson.clouds.all,
               humidity: responseJson.main.humidity,
               pressure: responseJson.main.pressure,
-              sunset: responseJson.sys.sunset
+              isDay:
+                this.state.dateTimestamp < responseJson.sys.sunset &&
+                this.state.dateTimestamp > responseJson.sys.sunrise
+                  ? 1
+                  : 0
             },
             function() {}
           );
@@ -182,102 +184,97 @@ export default class ActivityInfo extends Component {
         source={require("../../assets/images/activity-background-black.jpg")}
         style={{ flex: 1, width: "100%", height: "100%" }}
       >
-        <View style={styles.container}>
-          <Swiper
-            style={styles.wrapper}
-            showsButtons={false}
-            loop={false}
-            activeDotColor="#000000"
-          >
-            <View style={styles.slide1}>
-              <View style={styles.top_container}>
-                <View style={styles.timer}>
-                  <Text style={styles.time}>
-                    {this.state.hours} {this.state.minutes}:{this.state.seconds}
-                    .{this.state.miliseconds}
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.botton_container}>
-                <TouchableOpacity
-                  onPress={this.onButtonStartStop}
-                  style={[
-                    styles.start_button,
-                    this.state.isRunning && styles.stop_button
-                  ]}
-                >
-                  <Text>
-                    {this.state.isRunning ? (
-                      <Icon name="play" color={"#000000"} size={45} />
-                    ) : (
-                      <Icon name="pause" color={"#777777"} size={45} />
-                    )}
-                  </Text>
-                </TouchableOpacity>
+        <Swiper
+          style={styles.wrapper}
+          showsButtons={false}
+          loop={false}
+          activeDotColor="#000000"
+        >
+          <View style={styles.slide1}>
+            <View style={styles.top_container}>
+              <View style={styles.timer}>
+                <Text style={styles.time}>
+                  {this.state.hours} {this.state.minutes}:{this.state.seconds}.
+                  {this.state.miliseconds}
+                </Text>
               </View>
             </View>
-            <View style={styles.slide2}>
-              <View style={styles.activity_top_container}>
-                <View style={styles.date_container}>
-                  <Text style={styles.activity_date}>{this.state.date}</Text>
-                </View>
-                <View style={styles.icon_container}>
-                  <Image
-                    style={styles.icon}
-                    source={require("../../assets/images/Profil_icon.png")}
-                  />
-                </View>
-              </View>
-              <View style={styles.activity_bottom_container}>
-                <ActivityDetails distance={humidity} />
-              </View>
+            <View style={styles.botton_container}>
+              <TouchableOpacity
+                onPress={this.onButtonStartStop}
+                style={[
+                  styles.start_button,
+                  this.state.isRunning && styles.stop_button
+                ]}
+              >
+                <Text>
+                  {this.state.isRunning ? (
+                    <Icon name="play" color={"#000000"} size={45} />
+                  ) : (
+                    <Icon name="pause" color={"#777777"} size={45} />
+                  )}
+                </Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.slide3}>
-              {isLoading ? (
-                <View style={styles.loadingContainer}>
-                  <MaterialIndicator size={70} color="#000000" />
-                </View>
-              ) : (
-                <WeatherInfo
-                  id={id}
-                  weather_condition={weather_condition}
-                  weather_condition_description={weather_condition_description}
-                  temperature={temperature}
-                  temp_min={temp_min}
-                  temp_max={temp_max}
-                  location={location}
-                  wind={wind}
-                  visibility={visibility}
-                  direction={direction}
-                  cloudy={cloudy}
-                  humidity={humidity}
-                  pressure={pressure}
-                  isDay={isDay}
+          </View>
+          <View style={styles.slide2}>
+            <View style={styles.activity_top_container}>
+              <View style={styles.date_container}>
+                <Text style={styles.activity_date}>{this.state.date}</Text>
+              </View>
+              <View style={styles.icon_container}>
+                <Image
+                  style={styles.icon}
+                  source={require("../../assets/images/Profil_icon.png")}
                 />
-              )}
+              </View>
             </View>
-          </Swiper>
-          <TouchableOpacity
-            onPress={() =>
-              this.props.navigation.dispatch(DrawerActions.openDrawer())
-            }
-            style={styles.menu_open}
-          >
-            <Image
-              style={styles.menu_button}
-              source={require("../../assets/images/icons/menu.png")}
-            />
-          </TouchableOpacity>
-        </View>
+            <View style={styles.activity_bottom_container}>
+              <ActivityDetails distance={humidity} />
+            </View>
+          </View>
+          <View style={styles.slide3}>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <MaterialIndicator size={70} color="#000000" />
+              </View>
+            ) : (
+              <WeatherInfo
+                id={id}
+                weather_condition={weather_condition}
+                weather_condition_description={weather_condition_description}
+                temperature={temperature}
+                temp_min={temp_min}
+                temp_max={temp_max}
+                location={location}
+                wind={wind}
+                visibility={visibility}
+                direction={direction}
+                cloudy={cloudy}
+                humidity={humidity}
+                pressure={pressure}
+                isDay={isDay}
+              />
+            )}
+          </View>
+        </Swiper>
+        <TouchableOpacity
+          onPress={() =>
+            this.props.navigation.dispatch(DrawerActions.openDrawer())
+          }
+          style={styles.menu_open}
+        >
+          <Image
+            style={styles.menu_button}
+            source={require("../../assets/images/icons/menu_v1.png")}
+          />
+        </TouchableOpacity>
       </ImageBackground>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
   wrapper: {},
   slide1: {
     flex: 1,
@@ -290,9 +287,9 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   activity_top_container: {
-    marginTop: 110,
+    marginTop: 130,
     width: "100%",
-    height: "7%",
+    height: "9%",
     flexDirection: "row",
     alignItems: "center"
   },
@@ -321,7 +318,7 @@ const styles = StyleSheet.create({
   },
   activity_bottom_container: {
     width: "100%",
-    height: "93%"
+    height: "91%"
   },
   slide3: {
     flex: 1,

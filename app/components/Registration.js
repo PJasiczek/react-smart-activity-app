@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
   Button
 } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/FontAwesome";
 import moment from "moment";
 
@@ -40,7 +41,7 @@ export default class Registration extends Component {
   }
 
   UserRegistrationFunction = () => {
-    fetch("http://192.168.0.4/smartActivity/user_registration.php", {
+    fetch("http://192.168.0.2/smartActivity/user_registration.php", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -67,7 +68,7 @@ export default class Registration extends Component {
   };
 
   componentDidMount() {
-    return fetch("http://192.168.0.4/smartActivity/country_list.php")
+    return fetch("http://192.168.0.2/smartActivity/country_list.php")
       .then(response => response.json())
       .then(responseJson => {
         this.setState(
@@ -144,172 +145,168 @@ export default class Registration extends Component {
       );
     }
     return (
-      <ScrollView
-        scrollEnabled={scrollEnabled}
-        onContentSizeChange={this.onContentSizeChange}
+      <LinearGradient
+        colors={["rgba(0,0,0,0.3)", "transparent"]}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          height: "100%"
+        }}
       >
-        <KeyboardAvoidingView behavior="padding" style={styles.container}>
-          <View style={styles.logo_container}>
-            <Text style={styles.title}>
-              KONTO UMOŻLIWIAJĄCE DOSTĘP DO WSZYSTKICH USŁUG SMART ACTIVITY
-            </Text>
-            <View style={styles.profile_icon_container}>
-              <TouchableOpacity>
-                <Icon
-                  name="plus-circle"
-                  size={30}
-                  color="rgba(152,152,152,1)"
-                  style={styles.plus_action_container}
-                />
-              </TouchableOpacity>
+        <ScrollView
+          scrollEnabled={scrollEnabled}
+          onContentSizeChange={this.onContentSizeChange}
+        >
+          <KeyboardAvoidingView behavior="padding" style={styles.container}>
+            <View style={styles.logo_container}>
+              <Image
+                style={styles.logo}
+                source={require("../../assets/images/Logo.png")}
+              />
+              <Text style={styles.title}>
+                KONTO UMOŻLIWIAJĄCE DOSTĘP DO WSZYSTKICH USŁUG SMART ACTIVITY
+              </Text>
             </View>
-          </View>
-          <View style={styles.inputs_container}>
-            <TextInput
-              placeholder="Nazwa użytkownika"
-              placeholderTextColor="rgba(0,0,0,0.5)"
-              returKeyType="next"
-              onSubmitEditing={() => this.userUserNameInput.focus()}
-              onChangeText={username =>
-                this.setState({ UserUserName: username })
-              }
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Hasło"
-              placeholderTextColor="rgba(0,0,0,0.5)"
-              secureTextEntry
-              returKeyType="next"
-              ref={input => (this.userUserNameInput = input)}
-              onChangeText={password =>
-                this.setState({ UserPassword: password })
-              }
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="E-mail"
-              placeholderTextColor="rgba(0,0,0,0.5)"
-              ref={input => (this.userEmailInput = input)}
-              returKeyType="next"
-              onChangeText={email => this.setState({ UserEmail: email })}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Imię"
-              placeholderTextColor="rgba(0,0,0,0.5)"
-              returKeyType="next"
-              onChangeText={first_name =>
-                this.setState({ UserFirstName: first_name })
-              }
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Nazwisko"
-              placeholderTextColor="rgba(0,0,0,0.5)"
-              returKeyType="next"
-              onChangeText={last_name =>
-                this.setState({ UserLastName: last_name })
-              }
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="rrrr/mm/dd"
-              placeholderTextColor="rgba(0,0,0,0.5)"
-              returKeyType="next"
-              onTouchStart={this.showDateTimePicker}
-              value={this.state.UserDateOfBirth}
-              onChangeText={date_of_birth =>
-                this.setState({ UserDateOfBirth: date_of_birth })
-              }
-              style={styles.input}
-            />
-            /*
-            <DateTimePicker
-              isVisible={this.state.isDateTimePickerVisible}
-              onConfirm={this.handleDatePicked}
-              onCancel={this.hideDateTimePicker}
-              datePickerModeAndroid={"spinner"}
-              mode={"date"}
-            />
-            */
-            <View
-              style={{
-                height: 40,
-                borderColor: "rgba(0,0,0,0.4)",
-                borderWidth: 1,
-                borderRadius: 3,
-                backgroundColor: "rgba(255,255,255,0.2)",
-                color: "rgba(0,0,0,0.5)"
-              }}
-            >
-              <Picker
-                style={styles.input}
+            <View style={styles.inputs_container}>
+              <TextInput
+                placeholder="Nazwa użytkownika"
                 placeholderTextColor="rgba(0,0,0,0.5)"
-                selectedValue={this.state.PickerValueHolder}
-                onValueChange={(itemValue, itemIndex) =>
-                  this.setState({ UserCountry: itemValue })
+                returKeyType="next"
+                onSubmitEditing={() => this.userUserNameInput.focus()}
+                onChangeText={username =>
+                  this.setState({ UserUserName: username })
                 }
-                onChangeText={country =>
-                  this.setState({ UserCountry: country })
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Hasło"
+                placeholderTextColor="rgba(0,0,0,0.5)"
+                secureTextEntry
+                returKeyType="next"
+                ref={input => (this.userUserNameInput = input)}
+                onChangeText={password =>
+                  this.setState({ UserPassword: password })
                 }
-              >
-                {this.state.dataSource.map((item, key) => (
-                  <Picker.Item
-                    label={item.country_name}
-                    value={item.country_name}
-                    key={key}
-                  />
-                ))}
-              </Picker>
-            </View>
-            <Text style={styles.sex_header}>Płeć</Text>
-            <View style={styles.sex_container_chooser}>
-              <TouchableOpacity
-                onPress={() => this.props.navigation.navigate("Registration")}
-                style={styles.button_container}
-              >
-                <Text style={styles.button_text}>Mężczyzna</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.button_container}>
-                <Text style={styles.button_text}>Kobieta</Text>
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity
-              onPress={this.UserRegistrationFunction}
-              style={{
-                backgroundColor: "#000000",
-                borderWidth: 1,
-                alignItems: "center",
-                borderRadius: 3,
-                marginLeft: 5,
-                marginRight: 5,
-                paddingVertical: 10
-              }}
-            >
-              <Text
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="E-mail"
+                placeholderTextColor="rgba(0,0,0,0.5)"
+                ref={input => (this.userEmailInput = input)}
+                returKeyType="next"
+                onChangeText={email => this.setState({ UserEmail: email })}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Imię"
+                placeholderTextColor="rgba(0,0,0,0.5)"
+                returKeyType="next"
+                onChangeText={first_name =>
+                  this.setState({ UserFirstName: first_name })
+                }
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Nazwisko"
+                placeholderTextColor="rgba(0,0,0,0.5)"
+                returKeyType="next"
+                onChangeText={last_name =>
+                  this.setState({ UserLastName: last_name })
+                }
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="rrrr/mm/dd"
+                placeholderTextColor="rgba(0,0,0,0.5)"
+                returKeyType="next"
+                onTouchStart={this.showDateTimePicker}
+                value={this.state.UserDateOfBirth}
+                onChangeText={date_of_birth =>
+                  this.setState({ UserDateOfBirth: date_of_birth })
+                }
+                style={styles.input}
+              />
+
+              <View
                 style={{
-                  textAlign: "center",
-                  fontSize: 13,
-                  fontFamily: "Quicksand-Bold",
-                  color: "#ffffff",
-                  fontWeight: "700"
+                  height: 40,
+                  borderColor: "rgba(0,0,0,0.4)",
+                  borderWidth: 1,
+                  borderRadius: 3,
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  color: "rgba(0,0,0,0.5)"
                 }}
               >
-                UTWÓRZ KONTO
-              </Text>
-            </TouchableOpacity>
-            <Text style={styles.adding}>
-              Czy jesteś już członkiem?{" "}
-              <Text
-                onPress={() => this.props.navigation.navigate("Login")}
-                style={styles.adding_link}
+                <Picker
+                  style={styles.input}
+                  placeholderTextColor="rgba(0,0,0,0.5)"
+                  selectedValue={this.state.PickerValueHolder}
+                  onValueChange={(itemValue, itemIndex) =>
+                    this.setState({ UserCountry: itemValue })
+                  }
+                  onChangeText={country =>
+                    this.setState({ UserCountry: country })
+                  }
+                >
+                  {this.state.dataSource.map((item, key) => (
+                    <Picker.Item
+                      label={item.country_name}
+                      value={item.country_name}
+                      key={key}
+                    />
+                  ))}
+                </Picker>
+              </View>
+              <View style={styles.sex_container_chooser}>
+                <TouchableOpacity
+                  onPress={() => this.props.navigation.navigate("Registration")}
+                  style={styles.button_container}
+                >
+                  <Text style={styles.button_text}>Mężczyzna</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button_container}>
+                  <Text style={styles.button_text}>Kobieta</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                onPress={() => this.props.navigation.navigate("CreateAccount")}
+                style={{
+                  backgroundColor: "#000000",
+                  borderWidth: 1,
+                  alignItems: "center",
+                  borderRadius: 3,
+                  marginLeft: 5,
+                  marginRight: 5,
+                  paddingVertical: 10
+                }}
               >
-                Zaloguj się
-              </Text>{" "}
-            </Text>
-          </View>
-        </KeyboardAvoidingView>
-      </ScrollView>
+                <Text
+                  style={{
+                    textAlign: "center",
+                    fontSize: 13,
+                    fontFamily: "Quicksand-Bold",
+                    color: "#ffffff",
+                    fontWeight: "700"
+                  }}
+                >
+                  DALEJ
+                </Text>
+              </TouchableOpacity>
+              <Text style={styles.adding}>
+                Czy jesteś już członkiem?{" "}
+                <Text
+                  onPress={() => this.props.navigation.navigate("Login")}
+                  style={styles.adding_link}
+                >
+                  Zaloguj się
+                </Text>{" "}
+              </Text>
+            </View>
+          </KeyboardAvoidingView>
+        </ScrollView>
+      </LinearGradient>
     );
   }
 }
@@ -318,7 +315,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     flex: 1,
-    backgroundColor: "#fff"
+    backgroundColor: "transparent"
   },
   profile_icon_container: {
     marginTop: 40,
@@ -403,10 +400,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 10,
+    marginTop: 20,
     marginLeft: 5,
-    marginRight: 5,
-    marginBottom: 20
+    marginRight: 5
   },
   input: {
     height: 40,

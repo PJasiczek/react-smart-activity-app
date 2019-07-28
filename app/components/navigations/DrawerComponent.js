@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { NavigationActions } from "react-navigation";
 import { Text, View, StyleSheet, ImageBackground, Image } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Icon1 from "react-native-vector-icons/Entypo";
+import Icon2 from "react-native-vector-icons/FontAwesome5";
 
 export default class DrawerComponent extends Component {
   navigateToScreen = route => () => {
@@ -26,6 +28,15 @@ export default class DrawerComponent extends Component {
               <Text style={styles.header}>Piotr Jasiczek</Text>
             </View>
           </View>
+          <View style={styles.bottom_container}>
+            <View style={styles.navigator_container}>
+              <Icon1
+                name="log-out"
+                style={styles.icons}
+                onPress={this.navigateToScreen("Settings")}
+              />
+            </View>
+          </View>
         </View>
         <View style={styles.screen_container}>
           <View
@@ -47,6 +58,27 @@ export default class DrawerComponent extends Component {
               onPress={this.navigateToScreen("Profile")}
             >
               Profil
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.navigator_container,
+              this.props.activeItemKey == "MyActivity"
+                ? styles.selected_item
+                : null
+            ]}
+          >
+            <Icon1 name="stopwatch" style={styles.icons} />
+            <Text
+              style={[
+                styles.text_style,
+                this.props.activeItemKey == "MyActivity"
+                  ? styles.selected_text
+                  : null
+              ]}
+              onPress={this.navigateToScreen("MyActivity")}
+            >
+              Treningi
             </Text>
           </View>
           <View
@@ -116,15 +148,22 @@ export default class DrawerComponent extends Component {
 
 const styles = StyleSheet.create({
   container: {
+    position: "relative",
     flex: 1,
     alignItems: "center",
     backgroundColor: "transparent"
+  },
+  bottom_container: {
+    position: "absolute",
+    right: 0,
+    top: "5%"
   },
   profile_container: {
     height: 120,
     width: "90%"
   },
   profile: {
+    position: "relative",
     flex: 1,
     flexDirection: "row",
     alignItems: "center",

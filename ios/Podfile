@@ -36,6 +36,10 @@ target 'SmartActivityApplication' do
 
   pod 'react-native-location', :path => '../node_modules/react-native-location'
 
+  pod 'react-native-ble-manager', :path => '../node_modules/react-native-ble-manager'
+
+  pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
+
   target 'SmartActivityApplicationTests' do
     inherit! :search_paths
     # Pods for testing
