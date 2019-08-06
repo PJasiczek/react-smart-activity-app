@@ -15,103 +15,65 @@ import {
   ActivityIndicator,
   Button
 } from "react-native";
+import Toast from "@remobile/react-native-toast";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/FontAwesome";
+import ImagePicker from "react-native-image-picker";
+import RNFetchBlob from "react-native-fetch-blob";
 import moment from "moment";
-var ImagePicker = require("react-native-image-picker");
 
 const { height } = Dimensions.get("window");
 
+const options = {
+  title: "Wybierz zdjęcie profilowe",
+  takePhotoButtonTitle: "Zrób zdjęcie",
+  chooseFromLibraryButtonTitle: "Wybierz z galerii",
+  cancelButtonTitle: "Anuluj",
+  quality: 1
+};
+
 export default class CreateAccount extends Component {
-  constructor() {
-    super();
+  static navigationOptions = {
+    header: null
+  };
+
+  constructor(props) {
+    super(props);
 
     this.state = {
-      UserUserName: "",
-      UserPassword: "",
-      UserEmail: "",
-      UserFirstName: "",
-      UserLastName: "",
-      UserDateOfBirth: "",
-      UserCountry: "",
+      isLoading: false,
+      screenHeight: 0,
+      UserUserName: this.props.navigation.state.params.username,
+      UserWeight: "",
+      UserHeight: "",
+      UserProfileIcon: "",
       imageSource: null,
-      isLoading: true,
-      isDateTimePickerVisible: false,
-      PickerValueHolder: ""
+      data: ""
     };
   }
 
-  UserRegistrationFunction = () => {
-    fetch("http://192.168.0.2/smartActivity/user_registration.php", {
-      method: "POST",
+  UserModifyFunction = () => {
+    fetch("http://192.168.0.2/smartActivity/user_account_modify.php", {
+      method: "PUT",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         username: this.state.UserUserName,
-        password: this.state.UserPassword,
-        email: this.state.UserEmail,
-        first_name: this.state.UserFirstName,
-        last_name: this.state.UserLastName,
-        date_of_birth: this.state.UserDateOfBirth,
-        country: this.state.UserCountry
+        weight: this.state.UserWeight,
+        height: this.state.UserHeight,
+        profile_icon: this.state.UserProfileIcon
       })
     })
       .then(response => response.json())
       .then(responseJson => {
-        Alert.alert(responseJson);
+        Toast.showShortBottom(responseJson);
         this.props.navigation.navigate("Login");
       })
       .catch(error => {
         console.error(error);
       });
-  };
-
-  componentDidMount() {
-    return fetch("http://192.168.0.2/smartActivity/country_list.php")
-      .then(response => response.json())
-      .then(responseJson => {
-        this.setState(
-          {
-            isLoading: false,
-            dataSource: responseJson
-          },
-          function() {}
-        );
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  }
-
-  GetPickerSelectedItemValue = () => {
-    Alert.alert(this.state.PickerValueHolder);
-  };
-
-  showDateTimePicker = () => {
-    this.setState({ isDateTimePickerVisible: true });
-  };
-
-  hideDateTimePicker = () => {
-    this.setState({
-      isDateTimePickerVisible: false
-    });
-  };
-
-  handleDatePicked = date => {
-    this.setState({
-      isDateTimePickerVisible: false,
-      UserDateOfBirth: moment(date).format("YYYY/MM/DD")
-    });
-  };
-
-  static navigationOptions = {
-    header: null
-  };
-
-  state = {
-    screenHeight: 0
   };
 
   onContentSizeChange = (contentWidth, contentHeight) => {
@@ -129,10 +91,34 @@ export default class CreateAccount extends Component {
       } else {
         const source = { uri: response.uri };
         this.setState({
-          imageSource: source
+          imageSource: source,
+          data: response.data
         });
       }
     });
+  }
+
+  uploadPhoto() {
+    console.log(this.state.data);
+    RNFetchBlob.fetch(
+      "POST",
+      "http://192.168.0.2/smartActivity/upload_profile_icon.php",
+      {
+        Authorization: "Bearer access-token",
+        otherHeader: "foo",
+        "Content-Type": "multipart/form-data"
+      },
+      [
+        {
+          name: "image",
+          filename: "image.png",
+          type: "image/png",
+          data: this.state.data
+        }
+      ]
+    )
+      .then(resp => {})
+      .catch(err => {});
   }
 
   render() {
@@ -140,9 +126,27 @@ export default class CreateAccount extends Component {
 
     if (this.state.isLoading) {
       return (
-        <View style={{ flex: 1, paddingTop: 20 }}>
-          <ActivityIndicator />
-        </View>
+        <LinearGradient
+          colors={["rgba(0,0,0,0.3)", "transparent"]}
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            height: "100%"
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <ActivityIndicator />
+          </View>
+        </LinearGradient>
       );
     }
     return (
@@ -162,16 +166,22 @@ export default class CreateAccount extends Component {
         >
           <KeyboardAvoidingView behavior="padding" style={styles.container}>
             <View style={styles.logo_container}>
-              <View style={styles.profile_icon_container}>
-                <TouchableOpacity>
-                  <Icon
-                    name="plus-circle"
-                    size={30}
-                    color="rgba(0,0,0,0.5)"
+              <TouchableOpacity onPress={this.selectProfileIcon.bind(this)}>
+                <View style={styles.profile_icon_container}>
+                  <Image
+                    source={require("../../assets/images/icons/add_sign.png")}
                     style={styles.plus_action_container}
                   />
-                </TouchableOpacity>
-              </View>
+                  <Image
+                    style={styles.profile_icon}
+                    source={
+                      this.state.imageSource != null
+                        ? this.state.imageSource
+                        : require("../../assets/images/icons/default_profile_picture.png")
+                    }
+                  />
+                </View>
+              </TouchableOpacity>
             </View>
             <View style={styles.inputs_container}>
               <TextInput
@@ -179,24 +189,19 @@ export default class CreateAccount extends Component {
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
                 onSubmitEditing={() => this.userUserNameInput.focus()}
-                onChangeText={username =>
-                  this.setState({ UserUserName: username })
-                }
+                onChangeText={weight => this.setState({ UserWeight: weight })}
                 style={styles.input}
               />
               <TextInput
                 placeholder="Wzrost"
                 placeholderTextColor="rgba(0,0,0,0.5)"
-                secureTextEntry
                 returKeyType="next"
                 ref={input => (this.userUserNameInput = input)}
-                onChangeText={password =>
-                  this.setState({ UserPassword: password })
-                }
+                onChangeText={height => this.setState({ UserHeight: height })}
                 style={styles.input}
               />
               <TouchableOpacity
-                onPress={this.UserRegistrationFunction}
+                onPress={this.UserModifyFunction}
                 style={{
                   backgroundColor: "#000000",
                   borderWidth: 1,
@@ -213,10 +218,11 @@ export default class CreateAccount extends Component {
                     fontSize: 13,
                     fontFamily: "Quicksand-Bold",
                     color: "#ffffff",
-                    fontWeight: "700"
+                    fontWeight: "700",
+                    textTransform: "uppercase"
                   }}
                 >
-                  UTWÓRZ KONTO
+                  Utwórz konto
                 </Text>
               </TouchableOpacity>
               <Text style={styles.adding}>
@@ -250,10 +256,18 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.5)",
     borderWidth: 2
   },
+  profile_icon: {
+    width: 166,
+    height: 166,
+    borderRadius: 85
+  },
   plus_action_container: {
     position: "absolute",
+    height: 30,
+    width: 30,
     top: 1,
-    right: 20
+    right: 20,
+    zIndex: 3
   },
   inputs_container: {
     padding: 20

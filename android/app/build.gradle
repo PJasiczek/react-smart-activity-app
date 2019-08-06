@@ -196,6 +196,8 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-i18n')
+    compile project(':react-native-fetch-blob')
     implementation project(':react-native-image-picker')
     compile project(':react-native-bluetooth-serial-next')
     implementation project(':react-native-ble-manager')

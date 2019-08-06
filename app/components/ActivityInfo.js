@@ -181,7 +181,7 @@ export default class ActivityInfo extends Component {
 
     return (
       <ImageBackground
-        source={require("../../assets/images/activity-background-black.jpg")}
+        source={require("../../assets/images/activity_background_black.jpg")}
         style={{ flex: 1, width: "100%", height: "100%" }}
       >
         <Swiper
@@ -225,7 +225,7 @@ export default class ActivityInfo extends Component {
               <View style={styles.icon_container}>
                 <Image
                   style={styles.icon}
-                  source={require("../../assets/images/Profil_icon.png")}
+                  source={require("../../assets/images/profil_icon.png")}
                 />
               </View>
             </View>
@@ -266,7 +266,7 @@ export default class ActivityInfo extends Component {
         >
           <Image
             style={styles.menu_button}
-            source={require("../../assets/images/icons/menu_v1.png")}
+            source={require("../../assets/images/icons/menu.png")}
           />
         </TouchableOpacity>
       </ImageBackground>

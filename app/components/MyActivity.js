@@ -72,7 +72,7 @@ export default class Settings extends Component {
                 <BoxShadow setting={shadowOptInnerContainer}>
                   <View style={styles.inner_container}>
                     <Image
-                      source={require("../../assets/images/cycling-background-black.jpg")}
+                      source={require("../../assets/images/cycling_background_black.jpg")}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -106,7 +106,7 @@ export default class Settings extends Component {
                         >
                           <Image
                             style={styles.activity_image_button}
-                            source={require("../../assets/images/icons/right-arrow.png")}
+                            source={require("../../assets/images/icons/right_arrow.png")}
                           />
                         </TouchableOpacity>
                       </BoxShadow>
@@ -118,7 +118,7 @@ export default class Settings extends Component {
                 <BoxShadow setting={shadowOptInnerContainer}>
                   <View style={styles.inner_container}>
                     <Image
-                      source={require("../../assets/images/swim-background-black.jpg")}
+                      source={require("../../assets/images/swim_background_black.jpg")}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -152,7 +152,7 @@ export default class Settings extends Component {
                         >
                           <Image
                             style={styles.activity_image_button}
-                            source={require("../../assets/images/icons/right-arrow.png")}
+                            source={require("../../assets/images/icons/right_arrow.png")}
                           />
                         </TouchableOpacity>
                       </BoxShadow>
@@ -164,7 +164,7 @@ export default class Settings extends Component {
                 <BoxShadow setting={shadowOptInnerContainer}>
                   <View style={styles.inner_container}>
                     <Image
-                      source={require("../../assets/images/surf-background-black.jpg")}
+                      source={require("../../assets/images/surf_background_black.jpg")}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -199,7 +199,7 @@ export default class Settings extends Component {
                         >
                           <Image
                             style={styles.activity_image_button}
-                            source={require("../../assets/images/icons/right-arrow.png")}
+                            source={require("../../assets/images/icons/right_arrow.png")}
                           />
                         </TouchableOpacity>
                       </BoxShadow>
@@ -211,7 +211,7 @@ export default class Settings extends Component {
                 <BoxShadow setting={shadowOptInnerContainer}>
                   <View style={styles.inner_container}>
                     <Image
-                      source={require("../../assets/images/run-background-black.jpg")}
+                      source={require("../../assets/images/run_background_black.jpg")}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -246,7 +246,7 @@ export default class Settings extends Component {
                         >
                           <Image
                             style={styles.activity_image_button}
-                            source={require("../../assets/images/icons/right-arrow.png")}
+                            source={require("../../assets/images/icons/right_arrow.png")}
                           />
                         </TouchableOpacity>
                       </BoxShadow>
@@ -264,7 +264,7 @@ export default class Settings extends Component {
           >
             <Image
               style={styles.menu_image_button}
-              source={require("../../assets/images/icons/menu_v1.png")}
+              source={require("../../assets/images/icons/menu.png")}
             />
           </TouchableOpacity>
         </View>

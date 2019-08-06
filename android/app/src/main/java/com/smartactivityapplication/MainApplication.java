@@ -22,6 +22,8 @@ import com.facebook.react.shell.MainReactPackage;
 import com.airbnb.android.react.maps.MapsPackage;
 import com.remobile.toast.RCTToastPackage;
 import com.BV.LinearGradient.LinearGradientPackage;
+import com.RNFetchBlob.RNFetchBlobPackage;
+import com.AlexanderZaytsev.RNI18n.RNI18nPackage;
 
 import java.util.List;
 import java.util.Arrays;
@@ -45,6 +47,8 @@ public class MainApplication extends Application implements ReactApplication {
             new RNLocationPackage(),
             new LinearGradientPackage(),
             new RCTToastPackage(),
+            new RNFetchBlobPackage(),
+            new RNI18nPackage(),
             new SvgPackage(),
             new VectorIconsPackage(),
             new RNGestureHandlerPackage()

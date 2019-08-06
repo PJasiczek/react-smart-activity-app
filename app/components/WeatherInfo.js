@@ -64,7 +64,7 @@ const WeatherInfo = ({
           <View style={styles.inner_container}>
             <Image
               style={styles.icon}
-              source={require("../../assets/images/icons/visibility.png")}
+              source={require("../../assets/images/icons/visible-status.png")}
             />
             <Text style={styles.inner_label}>Widoczność</Text>
             <Text style={styles.inner_text}>

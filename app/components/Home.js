@@ -40,7 +40,7 @@ export default class Home extends Component {
               <View style={styles.logo_container}>
                 <Image
                   style={styles.logo}
-                  source={require("../../assets/images/Logo.png")}
+                  source={require("../../assets/images/logo.png")}
                 />
                 <Text style={styles.title}>
                   Witaj w{" "}
@@ -58,7 +58,7 @@ export default class Home extends Component {
             <View style={styles.slide2}>
               <Image
                 style={styles.logo}
-                source={require("../../assets/images/Heartbeat.png")}
+                source={require("../../assets/images/heartbeat.png")}
               />
               <Text style={styles.header}>ZDROWIE</Text>
               <Text style={styles.header_description}>
@@ -68,7 +68,7 @@ export default class Home extends Component {
             <View style={styles.slide3}>
               <Image
                 style={styles.logo}
-                source={require("../../assets/images/Smartwatch.png")}
+                source={require("../../assets/images/smartwatch.png")}
               />
               <Text style={styles.header}>STATYSTYKI</Text>
               <Text style={styles.header_description}>
@@ -103,10 +103,11 @@ export default class Home extends Component {
                   fontFamily: "Quicksand-Bold",
                   fontSize: 13,
                   color: "#ffffff",
-                  fontWeight: "700"
+                  fontWeight: "700",
+                  textTransform: "uppercase"
                 }}
               >
-                ZALOGUJ SIĘ
+                Zaloguj się
               </Text>
             </TouchableOpacity>
           </View>
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
   },
   button_container: {
     width: 160,
-    backgroundColor: "#ffffff",
+    backgroundColor: "transparent",
     borderColor: "#000000",
     borderWidth: 1,
     borderRadius: 3,

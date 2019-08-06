@@ -21,7 +21,7 @@ export default class DrawerComponent extends Component {
             <View style={styles.profile_icon}>
               <Image
                 style={styles.icon}
-                source={require("../../../assets/images/Profil_icon.png")}
+                source={require("../../../assets/images/profil_icon.png")}
               />
             </View>
             <View style={styles.profile_header}>

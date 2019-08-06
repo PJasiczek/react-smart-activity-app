@@ -39,7 +39,7 @@ export default class Profile extends Component {
               >
                 <Image
                   style={styles.menu_button}
-                  source={require("../../assets/images/icons/menu_v1.png")}
+                  source={require("../../assets/images/icons/menu.png")}
                 />
               </TouchableOpacity>
               <TouchableOpacity
@@ -49,9 +49,20 @@ export default class Profile extends Component {
                 <Icon1 name="settings" size={20} />
               </TouchableOpacity>
               <View style={styles.icon_container}>
+                <TouchableOpacity
+                  onPress={() =>
+                    this.props.navigation.dispatch(DrawerActions.openDrawer())
+                  }
+                  style={styles.edit_action_container}
+                >
+                  <Image
+                    source={require("../../assets/images/icons/edit_profile.png")}
+                    style={styles.edit_action_image}
+                  />
+                </TouchableOpacity>
                 <Image
                   style={styles.icon}
-                  source={require("../../assets/images/Profil_icon.png")}
+                  source={require("../../assets/images/profil_icon.png")}
                 />
               </View>
 
@@ -148,6 +159,25 @@ const styles = StyleSheet.create({
     height: "55%",
     alignItems: "center",
     backgroundColor: "transparent"
+  },
+  edit_action_container: {
+    position: "absolute",
+    height: 20,
+    width: 20,
+    bottom: 0,
+    right: 5,
+    zIndex: 3
+  },
+  edit_action_image: {
+    position: "absolute",
+    height: 20,
+    width: 20,
+    bottom: 0,
+    right: 5,
+    borderRadius: 10,
+    borderColor: "rgba(152,152,152,0.3)",
+    borderWidth: 1,
+    zIndex: 3
   },
   top_middle_container: {
     position: "relative",

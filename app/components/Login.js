@@ -72,7 +72,7 @@ export default class Login extends Component {
           <View style={styles.logo_container}>
             <Image
               style={styles.logo}
-              source={require("../../assets/images/Logo.png")}
+              source={require("../../assets/images/logo.png")}
             />
             <Text style={styles.title}>
               KONTO UMOŻLIWIAJĄCE DOSTĘP DO WSZYSTKICH USŁUG SMART ACTIVITY

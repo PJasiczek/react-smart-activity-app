@@ -227,7 +227,7 @@ export default class Map extends Component {
         >
           <Image
             style={styles.menu_button}
-            source={require("../../assets/images/icons/menu_v1.png")}
+            source={require("../../assets/images/icons/menu.png")}
           />
         </TouchableOpacity>
         <TouchableOpacity
