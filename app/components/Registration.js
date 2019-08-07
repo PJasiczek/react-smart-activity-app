@@ -100,7 +100,7 @@ export default class Registration extends Component {
       .then(responseJson => {
         if (responseJson == "Użytkownik istnieje już w systemie") {
           Toast.showShortBottom(responseJson);
-        } else if (responseJson == "Proszę wpisać poprawne imię i nazwisko") {
+        } else if (responseJson == "Proszę wpisać poprawne imię") {
           this.setState({
             ErrorFirstName: responseJson,
             ErrorLastName: this.state.UserLastName,
@@ -283,8 +283,8 @@ export default class Registration extends Component {
               </Text>
             </View>
             <View style={styles.inputs_container}>
-              {this.state.ErrorFirstName == "" &&
-              this.state.ErrorLastName == "" ? (
+              {this.state.ErrorFirstName != "Proszę wpisać poprawne imię" &&
+              this.state.ErrorLastName != "Proszę wpisać poprawne nazwisko" ? (
                 <View style={styles.inputs_inner_container}>
                   <TextInput
                     placeholder="Imię"
@@ -293,6 +293,7 @@ export default class Registration extends Component {
                     onChangeText={first_name =>
                       this.setState({ UserFirstName: first_name })
                     }
+                    value={this.state.UserFirstName}
                     style={{
                       height: 40,
                       width: "35%",
@@ -316,6 +317,7 @@ export default class Registration extends Component {
                     onChangeText={last_name =>
                       this.setState({ UserLastName: last_name })
                     }
+                    value={this.state.UserLastName}
                     style={{
                       height: 40,
                       width: "60%",
@@ -342,6 +344,7 @@ export default class Registration extends Component {
                     onChangeText={first_name =>
                       this.setState({ UserFirstName: first_name })
                     }
+                    value={this.state.UserFirstName}
                     style={{
                       height: 40,
                       width: "35%",
@@ -365,6 +368,7 @@ export default class Registration extends Component {
                     onChangeText={last_name =>
                       this.setState({ UserLastName: last_name })
                     }
+                    value={this.state.UserLastName}
                     style={{
                       height: 40,
                       width: "60%",
@@ -395,11 +399,14 @@ export default class Registration extends Component {
                 }
                 style={styles.healper_text}
               >
-                {this.state.ErrorFirstName}
-                {this.state.ErrorLastName}
+                {this.state.ErrorFirstName == "" &&
+                this.state.ErrorLastName == ""
+                  ? ""
+                  : this.state.ErrorFirstName}
               </HelperText>
 
-              {this.state.ErrorUserName == "" ? (
+              {this.state.ErrorUserName !=
+              "Proszę wpisać poprawną nazwę użytkownika" ? (
                 <TextInput
                   placeholder="Nazwa użytkownika"
                   placeholderTextColor="rgba(0,0,0,0.5)"
@@ -408,6 +415,7 @@ export default class Registration extends Component {
                   onChangeText={username =>
                     this.setState({ UserUserName: username })
                   }
+                  value={this.state.UserUserName}
                   style={styles.input}
                 />
               ) : (
@@ -419,18 +427,25 @@ export default class Registration extends Component {
                   onChangeText={username =>
                     this.setState({ UserUserName: username })
                   }
+                  value={this.state.UserUserName}
                   style={styles.input_error}
                 />
               )}
               <HelperText
                 type="error"
                 padding="none"
-                visible={this.state.ErrorUserName == "" ? false : true}
+                visible={
+                  this.state.ErrorUserName == "" ||
+                  this.state.ErrorUserName !=
+                    "Proszę wpisać poprawną nazwę użytkownika"
+                    ? false
+                    : true
+                }
               >
                 {this.state.ErrorUserName}
               </HelperText>
 
-              {this.state.ErrorPassword == "" ? (
+              {this.state.ErrorPassword != "Proszę wpisać poprawne hasło" ? (
                 <TextInput
                   placeholder="Hasło"
                   placeholderTextColor="rgba(0,0,0,0.5)"
@@ -440,6 +455,7 @@ export default class Registration extends Component {
                   onChangeText={password =>
                     this.setState({ UserPassword: password })
                   }
+                  value={this.state.UserPassword}
                   style={styles.input}
                 />
               ) : (
@@ -452,24 +468,32 @@ export default class Registration extends Component {
                   onChangeText={password =>
                     this.setState({ UserPassword: password })
                   }
+                  value={this.state.UserPassword}
                   style={styles.input_error}
                 />
               )}
               <HelperText
                 type="error"
                 padding="none"
-                visible={this.state.ErrorPassword == "" ? false : true}
+                visible={
+                  this.state.ErrorPassword == "" ||
+                  this.state.ErrorPassword != "Proszę wpisać poprawne hasło"
+                    ? false
+                    : true
+                }
               >
                 {this.state.ErrorPassword}
               </HelperText>
 
-              {this.state.ErrorEmail == "" ? (
+              {this.state.ErrorEmail !=
+              "Proszę wpisać poprawny adres skrzynki pocztowej" ? (
                 <TextInput
                   placeholder="E-mail"
                   placeholderTextColor="rgba(0,0,0,0.5)"
                   ref={input => (this.userEmailInput = input)}
                   returKeyType="next"
                   onChangeText={email => this.setState({ UserEmail: email })}
+                  value={this.state.UserEmail}
                   style={styles.input}
                 />
               ) : (
@@ -479,18 +503,26 @@ export default class Registration extends Component {
                   ref={input => (this.userEmailInput = input)}
                   returKeyType="next"
                   onChangeText={email => this.setState({ UserEmail: email })}
+                  value={this.state.UserEmail}
                   style={styles.input_error}
                 />
               )}
               <HelperText
                 type="error"
                 padding="none"
-                visible={this.state.ErrorEmail == "" ? false : true}
+                visible={
+                  this.state.ErrorEmail == "" ||
+                  this.state.ErrorEmail !=
+                    "Proszę wpisać poprawny adres skrzynki pocztowej"
+                    ? false
+                    : true
+                }
               >
                 {this.state.ErrorEmail}
               </HelperText>
 
-              {this.state.ErrorDateOfBirth == "" ? (
+              {this.state.ErrorDateOfBirth !=
+              "Proszę wpisać poprawną datę urodzenia" ? (
                 <View style={styles.inputs_inner_container}>
                   <TextInput
                     placeholder="Dzień"
@@ -499,6 +531,7 @@ export default class Registration extends Component {
                     onChangeText={date_of_birth_day =>
                       this.setState({ PickerValueDay: date_of_birth_day })
                     }
+                    value={this.state.PickerValueDay}
                     style={{
                       height: 40,
                       width: "20%",
@@ -590,6 +623,7 @@ export default class Registration extends Component {
                     onChangeText={date_of_birth_day =>
                       this.setState({ PickerValueDay: date_of_birth_day })
                     }
+                    value={this.state.PickerValueDay}
                     style={{
                       height: 40,
                       width: "20%",
@@ -598,7 +632,7 @@ export default class Registration extends Component {
                       borderRadius: 3,
                       alignItems: "center",
                       justifyContent: "center",
-                      backgroundColor: "transparent",
+                      backgroundColor: "rgba(255,0,0,0.05)",
                       fontFamily: "Quicksand-Light",
                       color: "rgba(255,0,0,1.0)",
                       paddingLeft: 10
@@ -676,7 +710,13 @@ export default class Registration extends Component {
               <HelperText
                 type="error"
                 padding="none"
-                visible={this.state.ErrorDateOfBirth == "" ? false : true}
+                visible={
+                  this.state.ErrorDateOfBirth == "" ||
+                  this.state.ErrorDateOfBirth !=
+                    "Proszę wpisać poprawną datę urodzenia"
+                    ? false
+                    : true
+                }
               >
                 {this.state.ErrorDateOfBirth}
               </HelperText>

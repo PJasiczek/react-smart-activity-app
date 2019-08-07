@@ -48,7 +48,7 @@ export default class CreateAccount extends Component {
       UserHeight: "",
       UserProfileIcon: "",
       imageSource: null,
-      data: ""
+      data: null
     };
   }
 
