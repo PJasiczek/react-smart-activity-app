@@ -42,13 +42,13 @@ export default class CreateAccount extends Component {
 
     this.state = {
       isLoading: false,
+      isUploading: false,
       screenHeight: 0,
+      imageSource: null,
       UserUserName: this.props.navigation.state.params.username,
       UserWeight: "",
       UserHeight: "",
-      UserProfileIcon: "",
-      imageSource: null,
-      data: null
+      UserProfileIcon: ""
     };
   }
 
@@ -80,46 +80,51 @@ export default class CreateAccount extends Component {
     this.setState({ screenHeight: contentHeight });
   };
 
-  selectProfileIcon() {
+  selectProfileIcon = async () => {
     ImagePicker.showImagePicker(options, response => {
-      console.log("Response = ", response);
-
       if (response.didCancel) {
-        console.log("User cancelled image picker");
+        Alert.alert("Błąd", "Zatrzymano ImagePicker");
       } else if (response.error) {
-        console.log("ImagePicker Error: ", response.error);
+        Alert.alert("Błąd", "Nieoczekiwany błąd ImagePicker");
       } else {
-        const source = { uri: response.uri };
-        this.setState({
-          imageSource: source,
-          data: response.data
-        });
+        this.setState({ UserProfileIcon: response.uri });
+        this.uploadPhoto(response.uri);
       }
     });
-  }
+  };
 
-  uploadPhoto() {
-    console.log(this.state.data);
-    RNFetchBlob.fetch(
-      "POST",
-      "http://192.168.0.2/smartActivity/upload_profile_icon.php",
-      {
-        Authorization: "Bearer access-token",
-        otherHeader: "foo",
-        "Content-Type": "multipart/form-data"
-      },
-      [
-        {
-          name: "image",
-          filename: "image.png",
-          type: "image/png",
-          data: this.state.data
+  uploadPhoto = async imageUri => {
+    this.setState({ isUploading: true });
+    let baseUrl = "http://192.168.0.2/smartActivity/";
+    let uploadData = new FormData();
+
+    uploadData.append("submit", "ok");
+    uploadData.append("file", {
+      type: "image/jpg",
+      uri: imageUri,
+      name: "profile_image.jpg"
+    });
+    fetch(baseUrl, {
+      method: "POST",
+      body: uploadData
+    })
+      .then(response => response.json())
+      .then(response => {
+        if (response.status) {
+          this.setState({
+            isUploading: false,
+            imageSource: baseUrl + response.image
+          });
+        } else {
+          this.setState({ isUploading: false });
+          Alert.alert("Błąd", response.message);
         }
-      ]
-    )
-      .then(resp => {})
-      .catch(err => {});
-  }
+      })
+      .catch(() => {
+        this.setState({ isUploading: false });
+        Alert.alert("Błąd", "Nie udało się nawiązać połączenia");
+      });
+  };
 
   render() {
     const scrollEnabled = this.state.screenHeight > height;
@@ -172,14 +177,13 @@ export default class CreateAccount extends Component {
                     source={require("../../assets/images/icons/add_sign.png")}
                     style={styles.plus_action_container}
                   />
-                  <Image
-                    style={styles.profile_icon}
-                    source={
-                      this.state.imageSource != null
-                        ? this.state.imageSource
-                        : require("../../assets/images/icons/default_profile_picture.png")
-                    }
-                  />
+                  {this.state.imageSource && (
+                    <Image
+                      style={styles.profile_icon}
+                      source={{ uri: this.state.imageSource }}
+                    />
+                  )}
+                  {this.state.isUploading && <ActivityIndicator />}
                 </View>
               </TouchableOpacity>
             </View>

@@ -392,17 +392,21 @@ export default class Registration extends Component {
                 type="error"
                 padding="none"
                 visible={
-                  this.state.ErrorFirstName == "" &&
-                  this.state.ErrorLastName == ""
-                    ? false
-                    : true
+                  this.state.ErrorFirstName == "Proszę wpisać poprawne imię"
+                    ? true
+                    : this.state.ErrorLastName ==
+                      "Proszę wpisać poprawne nazwisko"
+                    ? true
+                    : false
                 }
                 style={styles.healper_text}
               >
-                {this.state.ErrorFirstName == "" &&
-                this.state.ErrorLastName == ""
-                  ? ""
-                  : this.state.ErrorFirstName}
+                {this.state.ErrorFirstName == "Proszę wpisać poprawne imię"
+                  ? this.state.ErrorFirstName
+                  : this.state.ErrorLastName ==
+                    "Proszę wpisać poprawne nazwisko"
+                  ? this.state.ErrorLastName
+                  : ""}
               </HelperText>
 
               {this.state.ErrorUserName !=
