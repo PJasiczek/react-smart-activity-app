@@ -140,6 +140,27 @@ export default class DrawerComponent extends Component {
               Ustawienia
             </Text>
           </View>
+          <View
+            style={[
+              styles.navigator_container,
+              this.props.activeItemKey == "Bluetooth"
+                ? styles.selected_item
+                : null
+            ]}
+          >
+            <Icon name="settings" style={styles.icons} />
+            <Text
+              style={[
+                styles.text_style,
+                this.props.activeItemKey == "Bluetooth"
+                  ? styles.selected_text
+                  : null
+              ]}
+              onPress={this.navigateToScreen("Bluetooth")}
+            >
+              Bluetooth
+            </Text>
+          </View>
         </View>
       </View>
     );

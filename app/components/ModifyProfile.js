@@ -32,7 +32,7 @@ const options = {
   quality: 1
 };
 
-export default class CreateAccount extends Component {
+export default class ModifyProfile extends Component {
   static navigationOptions = {
     header: null
   };
@@ -45,15 +45,35 @@ export default class CreateAccount extends Component {
       isUploading: false,
       screenHeight: 0,
       imageSource: null,
-      UserUserName: this.props.navigation.state.params.username,
+      UserUserName: "",
+      UserNewUserName: "",
+      UserOldPassword: "",
+      UserNewPassword: "",
+      UserEmail: "",
       UserWeight: "",
       UserHeight: "",
       UserProfileIcon: ""
     };
   }
 
+  componentDidMount() {
+    return fetch("http://192.168.0.2/smartActivity/user_data_values.php")
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState(
+          {
+            dataSource: responseJson
+          },
+          function() {}
+        );
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
   UserModifyFunction = () => {
-    fetch("http://192.168.0.2/smartActivity/user_account_modify.php", {
+    fetch("http://192.168.0.2/smartActivity/user_profile_modifyy.php", {
       method: "PUT",
       headers: {
         Accept: "application/json",
@@ -61,6 +81,9 @@ export default class CreateAccount extends Component {
       },
       body: JSON.stringify({
         username: this.state.UserUserName,
+        new_username: this.state.UserNewUserName,
+        email: this.state.UserEmail,
+        new_password: this.state.UserNewPassword,
         weight: this.state.UserWeight,
         height: this.state.UserHeight,
         profile_icon: this.state.UserProfileIcon
@@ -69,7 +92,7 @@ export default class CreateAccount extends Component {
       .then(response => response.json())
       .then(responseJson => {
         Toast.showShortBottom(responseJson);
-        this.props.navigation.navigate("Login");
+        this.props.navigation.navigate("Profile");
       })
       .catch(error => {
         console.error(error);
@@ -88,6 +111,7 @@ export default class CreateAccount extends Component {
         Alert.alert("Błąd", "Nieoczekiwany błąd ImagePicker");
       } else {
         this.setState({ UserProfileIcon: response.uri });
+        Alert.alert(response.uri);
         this.uploadPhoto(response.uri);
       }
     });
@@ -190,6 +214,49 @@ export default class CreateAccount extends Component {
             </View>
             <View style={styles.inputs_container}>
               <TextInput
+                placeholder="Nazwa użytkownika"
+                placeholderTextColor="rgba(0,0,0,0.5)"
+                returKeyType="next"
+                ref={input => (this.userUserNameInput = input)}
+                onChangeText={username =>
+                  this.setState({ UserUserName: username })
+                }
+                value={this.state.UserUserName}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="E-mail"
+                placeholderTextColor="rgba(0,0,0,0.5)"
+                returKeyType="next"
+                ref={input => (this.userUserNameInput = input)}
+                onChangeText={email => this.setState({ UserEmail: email })}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Stare hasło"
+                placeholderTextColor="rgba(0,0,0,0.5)"
+                secureTextEntry
+                returKeyType="next"
+                ref={input => (this.userUserNameInput = input)}
+                onChangeText={old_password =>
+                  this.setState({ UserOldPassword: old_password })
+                }
+                value={this.state.UserOldPassword}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Nowe hasło"
+                placeholderTextColor="rgba(0,0,0,0.5)"
+                secureTextEntry
+                returKeyType="next"
+                ref={input => (this.userUserNameInput = input)}
+                onChangeText={new_password =>
+                  this.setState({ UserNewPassword: new_password })
+                }
+                value={this.state.UserNewPassword}
+                style={styles.input}
+              />
+              <TextInput
                 placeholder="Waga (kg)"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
@@ -227,18 +294,9 @@ export default class CreateAccount extends Component {
                     textTransform: "uppercase"
                   }}
                 >
-                  Utwórz konto
+                  Edytuj
                 </Text>
               </TouchableOpacity>
-              <Text style={styles.adding}>
-                Czy jesteś już członkiem?{" "}
-                <Text
-                  onPress={() => this.props.navigation.navigate("Login")}
-                  style={styles.adding_link}
-                >
-                  Zaloguj się
-                </Text>{" "}
-              </Text>
             </View>
           </KeyboardAvoidingView>
         </ScrollView>
@@ -284,16 +342,6 @@ const styles = StyleSheet.create({
   logo_container: {
     alignItems: "center",
     flexGrow: 1
-  },
-  adding: {
-    color: "rgba(0,0,0,0.7)",
-    fontFamily: "Quicksand-Light",
-    fontSize: 11,
-    marginTop: 9,
-    textAlign: "center"
-  },
-  adding_link: {
-    fontFamily: "Quicksand-Bold"
   },
   sex_header: {
     fontFamily: "Quicksand-Light",

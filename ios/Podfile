@@ -40,6 +40,8 @@ target 'SmartActivityApplication' do
 
   pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
 
+  pod 'react-native-ble-plx', :path => '../node_modules/react-native-ble-plx'
+
   target 'SmartActivityApplicationTests' do
     inherit! :search_paths
     # Pods for testing

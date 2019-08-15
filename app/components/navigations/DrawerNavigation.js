@@ -7,7 +7,9 @@ import MyActivity from "../MyActivity";
 import Map from "../Map";
 import ActivityInfo from "../ActivityInfo";
 import Settings from "../Settings";
+import Bluetooth from "../Bluetooth";
 import CreateAccount from "../CreateAccount";
+import ModifyProfile from "../ModifyProfile";
 
 import DrawerComponent from "./DrawerComponent";
 
@@ -18,7 +20,9 @@ const NavigationStack = createDrawerNavigator(
     Map: { screen: Map },
     ActivityInfo: { screen: ActivityInfo },
     Settings: { screen: Settings },
-    CreateAccount: { screen: CreateAccount }
+    Bluetooth: { screen: Bluetooth },
+    CreateAccount: { screen: CreateAccount },
+    ModifyProfile: { screen: ModifyProfile }
   },
   {
     contentComponent: DrawerComponent,

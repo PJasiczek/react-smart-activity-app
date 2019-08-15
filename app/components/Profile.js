@@ -51,7 +51,7 @@ export default class Profile extends Component {
               <View style={styles.icon_container}>
                 <TouchableOpacity
                   onPress={() =>
-                    this.props.navigation.dispatch(DrawerActions.openDrawer())
+                    this.props.navigation.navigate("ModifyProfile")
                   }
                   style={styles.edit_action_container}
                 >
