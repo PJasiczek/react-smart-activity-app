@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Platform, View, Text, Alert } from "react-native";
 import { BleManager } from "react-native-ble-plx";
 import { Buffer } from "buffer";
+var converter = require("hex2dec");
 
 export default class Bluetooth extends Component {
   constructor() {
@@ -11,6 +12,9 @@ export default class Bluetooth extends Component {
       info: "",
       name: "",
       serial_number: "",
+      step_modul: "",
+      step_divide: "",
+      distance: "",
       step: "",
       heart: "",
       values: {}
@@ -118,23 +122,49 @@ export default class Bluetooth extends Component {
     );
     Alert.alert("characteristic value heart", characteristicSerial.value);
 
-    const serviceHeart = "0000fee0-0000-1000-8000-00805f9b34fb";
-    const characteristicWHeart = "00000007-0000-3512-2118-0009af100700";
+    const serviceStep = "0000fee0-0000-1000-8000-00805f9b34fb";
+    const characteristicWStep = "00000007-0000-3512-2118-0009af100700";
 
-    const characteristicHeart = await device.readCharacteristicForService(
-      serviceHeart,
-      characteristicWHeart
+    const characteristicStep = await device.readCharacteristicForService(
+      serviceStep,
+      characteristicWStep
     );
-    Alert.alert("characteristic value heart", characteristicHeart.value);
-    const returnedHeartValue = Buffer.from(
-      characteristicHeart.value,
+    Alert.alert("characteristic value step", characteristicStep.value);
+    const returnedStepValue = Buffer.from(
+      characteristicStep.value,
       "base64"
     ).toString("hex");
-    var steps = returnedHeartValue.substring(2, 6);
-    var calories = returnedHeartValue.substring(18, 20);
+
+    var steps_modulo = converter.hexToDec(returnedStepValue.substring(2, 4));
+    var steps_divided = converter.hexToDec(returnedStepValue.substring(4, 6));
+    var steps = parseInt(steps_divided) * 256 + parseInt(steps_modulo);
+
+    const serviceDistance = "0000fee0-0000-1000-8000-00805f9b34fb";
+    const characteristicWDistance = "00000007-0000-3512-2118-0009af100700";
+
+    const characteristicDistance = await device.readCharacteristicForService(
+      serviceDistance,
+      characteristicWDistance
+    );
+    Alert.alert("characteristic value distance", characteristicDistance.value);
+    const returnedDistanceValue = Buffer.from(
+      characteristicDistance.value,
+      "base64"
+    ).toString("hex");
+    var distance_modulo = converter.hexToDec(
+      returnedDistanceValue.substring(10, 12)
+    );
+    var distance_divided = converter.hexToDec(
+      returnedDistanceValue.substring(12, 14)
+    );
+    var distances =
+      parseInt(distance_divided) * 256 + parseInt(distance_modulo);
+    var calories = converter.hexToDec(returnedDistanceValue.substring(18, 20));
+
     this.setState({
-      heart: returnedHeartValue,
+      heart: returnedDistanceValue,
       step: steps,
+      distance: distances,
       calorie: calories
     });
   }
@@ -170,8 +200,9 @@ export default class Bluetooth extends Component {
         <Text>{this.state.info}</Text>
         <Text>{this.state.name}</Text>
         <Text>{this.state.serial_number}</Text>
-        <Text>{this.state.step}</Text>
-        <Text>{this.state.calorie}</Text>
+        <Text>Kroki: {this.state.step}</Text>
+        <Text>Dystans: {this.state.distance} m</Text>
+        <Text>Kalorie: {this.state.calorie} cal</Text>
         <Text>{this.state.heart}</Text>
       </View>
     );
