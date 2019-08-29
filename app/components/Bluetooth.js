@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Platform, View, Text, Alert } from "react-native";
+import Toast from "@remobile/react-native-toast";
 import { BleManager } from "react-native-ble-plx";
 import { Buffer } from "buffer";
 var converter = require("hex2dec");
@@ -12,30 +13,10 @@ export default class Bluetooth extends Component {
       info: "",
       name: "",
       serial_number: "",
-      step_modul: "",
-      step_divide: "",
       distance: "",
       step: "",
-      heart: "",
-      values: {}
+      heart: ""
     };
-    this.prefixUUID = "00002a0";
-    this.suffixUUID = "-0000-1000-8000-00805f9b34fb";
-    this.sensors = {
-      0: "Temperature"
-    };
-  }
-
-  serviceUUID(num) {
-    return this.prefixUUID + num + this.suffixUUID;
-  }
-
-  notifyUUID(num) {
-    return this.prefixUUID + num + this.suffixUUID;
-  }
-
-  writeUUID(num) {
-    return this.prefixUUID + num + this.suffixUUID;
   }
 
   info(message) {
@@ -43,11 +24,7 @@ export default class Bluetooth extends Component {
   }
 
   error(message) {
-    this.setState({ info: "ERROR: " + message });
-  }
-
-  updateValue(key, value) {
-    this.setState({ values: { ...this.state.values, [key]: value } });
+    this.setState({ info: "Błąd: " + message });
   }
 
   componentWillMount() {
@@ -62,7 +39,7 @@ export default class Bluetooth extends Component {
 
   scanAndConnect() {
     this.manager.startDeviceScan(null, null, (error, device) => {
-      this.info("Scanning...");
+      this.info("Skanowanie...");
       console.log(device);
 
       if (error) {
@@ -71,23 +48,25 @@ export default class Bluetooth extends Component {
       }
 
       if (device.name === "Mi Smart Band 4") {
-        this.info("Connecting to Mi Smart Band 4");
+        this.info("Połączono z Mi Smart Band 4");
         Alert.alert(device.name);
         Alert.alert(device.id);
         this.manager.stopDeviceScan();
         device
           .connect()
           .then(device => {
-            this.info("Discovering services and characteristics");
+            this.info("Przeszukiwanie charakterystyk...");
             return device.discoverAllServicesAndCharacteristics();
           })
           .then(device => {
-            this.info("Setting notifications");
-            return this.setupNotifications(device);
+            this.info("Czytanie...");
+            setInterval(() => {
+              return this.setupNotifications(device);
+            }, 1000);
           })
           .then(
             () => {
-              this.info("Listening...");
+              this.info("Nasłuchiwanie...");
             },
             error => {
               this.error(error.message);
@@ -105,13 +84,9 @@ export default class Bluetooth extends Component {
       service,
       characteristicW
     );
-    Alert.alert("characteristic value name", characteristic.value);
     const returnedValue = Buffer.from(characteristic.value, "base64").toString(
       "ascii"
     );
-    Alert.alert("characteristic value name po utf-8", returnedValue);
-
-    this.setState({ name: returnedValue });
 
     const serviceSerial = "0000fee0-0000-1000-8000-00805f9b34fb";
     const characteristicWSerial = "00000006-0000-3512-2118-0009af100700";
@@ -120,7 +95,6 @@ export default class Bluetooth extends Component {
       serviceSerial,
       characteristicWSerial
     );
-    Alert.alert("characteristic value heart", characteristicSerial.value);
 
     const serviceStep = "0000fee0-0000-1000-8000-00805f9b34fb";
     const characteristicWStep = "00000007-0000-3512-2118-0009af100700";
@@ -129,7 +103,6 @@ export default class Bluetooth extends Component {
       serviceStep,
       characteristicWStep
     );
-    Alert.alert("characteristic value step", characteristicStep.value);
     const returnedStepValue = Buffer.from(
       characteristicStep.value,
       "base64"
@@ -146,11 +119,11 @@ export default class Bluetooth extends Component {
       serviceDistance,
       characteristicWDistance
     );
-    Alert.alert("characteristic value distance", characteristicDistance.value);
     const returnedDistanceValue = Buffer.from(
       characteristicDistance.value,
       "base64"
     ).toString("hex");
+
     var distance_modulo = converter.hexToDec(
       returnedDistanceValue.substring(10, 12)
     );
@@ -160,8 +133,9 @@ export default class Bluetooth extends Component {
     var distances =
       parseInt(distance_divided) * 256 + parseInt(distance_modulo);
     var calories = converter.hexToDec(returnedDistanceValue.substring(18, 20));
-
+    Alert.alert(calories);
     this.setState({
+      name: returnedValue,
       heart: returnedDistanceValue,
       step: steps,
       distance: distances,
@@ -169,31 +143,6 @@ export default class Bluetooth extends Component {
     });
   }
 
-  async setupNotificationss(device) {
-    for (const id in this.sensors) {
-      const service = this.serviceUUID(id);
-      const characteristicW = this.writeUUID(id);
-      const characteristicN = this.notifyUUID(id);
-
-      const characteristic = await device.writeCharacteristicWithResponseForService(
-        service,
-        characteristicW,
-        "AQ==" /* 0x01 in hex */
-      );
-
-      device.monitorCharacteristicForService(
-        service,
-        characteristicN,
-        (error, characteristic) => {
-          if (error) {
-            this.error(error.message);
-            return;
-          }
-          this.updateValue(characteristic.uuid, characteristic.value);
-        }
-      );
-    }
-  }
   render() {
     return (
       <View>
@@ -203,7 +152,7 @@ export default class Bluetooth extends Component {
         <Text>Kroki: {this.state.step}</Text>
         <Text>Dystans: {this.state.distance} m</Text>
         <Text>Kalorie: {this.state.calorie} cal</Text>
-        <Text>{this.state.heart}</Text>
+        <Text>Tętno: {this.state.heart}</Text>
       </View>
     );
   }

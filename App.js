@@ -6,6 +6,7 @@ import Home from "./app/components/Home";
 import Login from "./app/components/Login";
 import Registration from "./app/components/Registration";
 import CreateAccount from "./app/components/CreateAccount";
+import Map from "./app/components/Map";
 import ModifyProfile from "./app/components/ModifyProfile";
 import UserHome from "./app/components/UserHome";
 
@@ -21,6 +22,9 @@ const Navigation = createStackNavigator({
   },
   CreateAccount: {
     screen: CreateAccount
+  },
+  Map: {
+    screen: Map
   },
   ModifyProfile: {
     screen: ModifyProfile

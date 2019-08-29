@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import {
   AppRegistry,
+  ActivityIndicator,
+  ListView,
   StyleSheet,
   Text,
   View,
@@ -12,7 +14,6 @@ import {
   Dimensions,
   Alert,
   Picker,
-  ActivityIndicator,
   Button
 } from "react-native";
 import Toast from "@remobile/react-native-toast";
@@ -57,15 +58,25 @@ export default class ModifyProfile extends Component {
   }
 
   componentDidMount() {
-    return fetch("http://192.168.0.2/smartActivity/user_data_values.php")
+    return fetch("http://192.168.0.3/smartActivity/user_data_values.php", {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: "jasiu1047"
+      })
+    })
       .then(response => response.json())
       .then(responseJson => {
-        this.setState(
-          {
-            dataSource: responseJson
-          },
-          function() {}
-        );
+        this.setState({
+          UserOldPassword: responseJson[0].password,
+          UserEmail: responseJson[0].email,
+          UserWeight: responseJson[0].weight,
+          UserHeight: responseJson[0].height,
+          imageSource: responseJson[0].profile_icon
+        });
       })
       .catch(error => {
         console.error(error);
@@ -73,7 +84,7 @@ export default class ModifyProfile extends Component {
   }
 
   UserModifyFunction = () => {
-    fetch("http://192.168.0.2/smartActivity/user_profile_modifyy.php", {
+    fetch("http://192.168.0.3/smartActivity/user_profile_modify.php", {
       method: "PUT",
       headers: {
         Accept: "application/json",
@@ -213,6 +224,7 @@ export default class ModifyProfile extends Component {
               </TouchableOpacity>
             </View>
             <View style={styles.inputs_container}>
+              <Text style={styles.input_header}>Nazwa użytkownika</Text>
               <TextInput
                 placeholder="Nazwa użytkownika"
                 placeholderTextColor="rgba(0,0,0,0.5)"
@@ -224,14 +236,17 @@ export default class ModifyProfile extends Component {
                 value={this.state.UserUserName}
                 style={styles.input}
               />
+              <Text style={styles.input_header}>E-mail</Text>
               <TextInput
                 placeholder="E-mail"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
                 ref={input => (this.userUserNameInput = input)}
                 onChangeText={email => this.setState({ UserEmail: email })}
+                value={this.state.UserEmail}
                 style={styles.input}
               />
+              <Text style={styles.input_header}>Stare hasło</Text>
               <TextInput
                 placeholder="Stare hasło"
                 placeholderTextColor="rgba(0,0,0,0.5)"
@@ -241,9 +256,9 @@ export default class ModifyProfile extends Component {
                 onChangeText={old_password =>
                   this.setState({ UserOldPassword: old_password })
                 }
-                value={this.state.UserOldPassword}
                 style={styles.input}
               />
+              <Text style={styles.input_header}>Nowe hasło</Text>
               <TextInput
                 placeholder="Nowe hasło"
                 placeholderTextColor="rgba(0,0,0,0.5)"
@@ -256,20 +271,24 @@ export default class ModifyProfile extends Component {
                 value={this.state.UserNewPassword}
                 style={styles.input}
               />
+              <Text style={styles.input_header}>Waga</Text>
               <TextInput
                 placeholder="Waga (kg)"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
                 onSubmitEditing={() => this.userUserNameInput.focus()}
                 onChangeText={weight => this.setState({ UserWeight: weight })}
+                value={this.state.UserWeight}
                 style={styles.input}
               />
+              <Text style={styles.input_header}>Wzrost</Text>
               <TextInput
                 placeholder="Wzrost (cm)"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
                 ref={input => (this.userUserNameInput = input)}
                 onChangeText={height => this.setState({ UserHeight: height })}
+                value={this.state.UserHeight}
                 style={styles.input}
               />
               <TouchableOpacity
@@ -279,6 +298,7 @@ export default class ModifyProfile extends Component {
                   borderWidth: 1,
                   alignItems: "center",
                   borderRadius: 3,
+                  marginTop: 10,
                   marginLeft: 5,
                   marginRight: 5,
                   paddingVertical: 10
@@ -405,9 +425,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.2)",
-    marginBottom: 20,
+    marginBottom: 10,
     fontFamily: "Quicksand-Light",
-    color: "rgba(0,0,0,0.2)",
+    color: "rgba(0,0,0,0.5)",
     paddingHorizontal: 10
+  },
+  input_header: {
+    fontFamily: "Quicksand-Bold",
+    color: "rgba(0,0,0,0.5)",
+    fontSize: 12,
+    marginLeft: 10,
+    marginBottom: 5
   }
 });

@@ -84,6 +84,27 @@ export default class DrawerComponent extends Component {
           <View
             style={[
               styles.navigator_container,
+              this.props.activeItemKey == "ActivityHistory"
+                ? styles.selected_item
+                : null
+            ]}
+          >
+            <Icon name="history" style={styles.icons} />
+            <Text
+              style={[
+                styles.text_style,
+                this.props.activeItemKey == "ActivityHistory"
+                  ? styles.selected_text
+                  : null
+              ]}
+              onPress={this.navigateToScreen("ActivityHistory")}
+            >
+              Twoje Treningi
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.navigator_container,
               this.props.activeItemKey == "Map" ? styles.selected_item : null
             ]}
           >

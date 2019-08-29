@@ -1,16 +1,17 @@
 import React, { Component } from "react";
 import {
+  AppRegistry,
   StyleSheet,
+  ActivityIndicator,
+  ListView,
   Text,
   View,
   TouchableOpacity,
   Image,
-  ImageBackground
+  ImageBackground,
+  Alert,
+  Dimensions
 } from "react-native";
-import { DrawerActions } from "react-navigation";
-
-import Swiper from "react-native-swiper";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {
   BallIndicator,
   BarIndicator,
@@ -22,27 +23,57 @@ import {
   UIActivityIndicator,
   WaveIndicator
 } from "react-native-indicators";
-
+import { DrawerActions } from "react-navigation";
+import Swiper from "react-native-swiper";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Icon1 from "react-native-vector-icons/Entypo";
+import { BleManager } from "react-native-ble-plx";
+import { Buffer } from "buffer";
+import Toast from "@remobile/react-native-toast";
 import moment from "moment";
 import "moment/locale/pl";
+
+const { width, height } = Dimensions.get("window");
+
+var converter = require("hex2dec");
 
 import WeatherInfo from "./WeatherInfo";
 import ActivityDetails from "./ActivityDetails";
 
 export default class ActivityInfo extends Component {
+  static navigationOptions = {
+    header: null
+  };
+
   constructor(props) {
     super(props);
-
+    this.manager = new BleManager();
     this.state = {
-      timer: null,
-      isRunning: true,
+      backgroundImageSource: this.props.navigation.state.params
+        .backgroundImageSource,
+      isRunning: this.props.navigation.state.params.isRunning,
+      activityType: this.props.navigation.state.params.activityType,
       isLoading: true,
       iDay: true,
+      timer: null,
       date: "",
       hours: "",
       minutes: "00",
       seconds: "00",
       miliseconds: "00",
+      info: "",
+      name: "",
+      serial_number: "",
+      distanceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      speedDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      start_distance: "",
+      distance: "",
+      speed: "",
+      steps: "",
+      start_steps: "",
+      calories: "",
+      start_calories: "",
+      heart: "",
       id: 0,
       description: null,
       location: null,
@@ -70,11 +101,216 @@ export default class ActivityInfo extends Component {
     moment.locale("pl");
 
     this.fetchWeather();
+    this.onButtonStartStop();
 
     that.setState({
       date: now.format("LL"),
       dateTimestamp: now.unix()
     });
+  }
+
+  componentWillMount() {
+    if (Platform.OS === "ios") {
+      this.manager.onStateChange(state => {
+        if (state === "PoweredOn") this.scanAndConnect();
+      });
+    } else {
+      this.scanAndConnect();
+    }
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.timer);
+  }
+
+  updateDistanceArray() {
+    this.state.distanceDataArray.shift();
+    this.state.distanceDataArray.push(this.state.distance);
+
+    this.state.speedDataArray.shift();
+    this.state.speedDataArray.push(this.state.distance / 1000);
+  }
+
+  info(message) {
+    this.setState({ info: message });
+  }
+
+  error(message) {
+    this.setState({ info: "Błąd: " + message });
+  }
+
+  scanAndConnect() {
+    this.manager.startDeviceScan(null, null, (error, device) => {
+      this.info("Skanowanie...");
+      console.log(device);
+
+      if (error) {
+        this.error(error.message);
+        return;
+      }
+
+      if (device.name === "Mi Smart Band 4") {
+        this.info("Połączono z Mi Smart Band 4");
+        Toast.showShortBottom(device.name);
+        Toast.showShortBottom(device.id);
+        this.manager.stopDeviceScan();
+        device
+          .connect()
+          .then(device => {
+            this.info("Przeszukiwanie charakterystyk...");
+            return device.discoverAllServicesAndCharacteristics();
+          })
+          .then(device => {
+            this.info("Czytanie...");
+            this.readStartValueCharacteristics(device);
+            setInterval(() => {
+              return this.readCharacteristics(device);
+            }, 1000);
+          })
+          .then(
+            () => {
+              this.info("Nasłuchiwanie...");
+            },
+            error => {
+              this.error(error.message);
+            }
+          );
+      }
+    });
+  }
+
+  async readStartValueCharacteristics(device) {
+    const service = "00001800-0000-1000-8000-00805f9b34fb";
+    const characteristicW = "00002a00-0000-1000-8000-00805f9b34fb";
+
+    const characteristic = await device.readCharacteristicForService(
+      service,
+      characteristicW
+    );
+    const returnedValue = Buffer.from(characteristic.value, "base64").toString(
+      "ascii"
+    );
+
+    const serviceSerial = "0000fee0-0000-1000-8000-00805f9b34fb";
+    const characteristicWSerial = "00000006-0000-3512-2118-0009af100700";
+
+    const characteristicSerial = await device.readCharacteristicForService(
+      serviceSerial,
+      characteristicWSerial
+    );
+
+    const serviceStep = "0000fee0-0000-1000-8000-00805f9b34fb";
+    const characteristicWStep = "00000007-0000-3512-2118-0009af100700";
+
+    const characteristicStep = await device.readCharacteristicForService(
+      serviceStep,
+      characteristicWStep
+    );
+    const returnedStepValue = Buffer.from(
+      characteristicStep.value,
+      "base64"
+    ).toString("hex");
+
+    var steps_modulo = converter.hexToDec(returnedStepValue.substring(2, 4));
+    var steps_divided = converter.hexToDec(returnedStepValue.substring(4, 6));
+    var steps = parseInt(steps_divided) * 256 + parseInt(steps_modulo);
+
+    const serviceDistance = "0000fee0-0000-1000-8000-00805f9b34fb";
+    const characteristicWDistance = "00000007-0000-3512-2118-0009af100700";
+
+    const characteristicDistance = await device.readCharacteristicForService(
+      serviceDistance,
+      characteristicWDistance
+    );
+    const returnedDistanceValue = Buffer.from(
+      characteristicDistance.value,
+      "base64"
+    ).toString("hex");
+
+    var distance_modulo = converter.hexToDec(
+      returnedDistanceValue.substring(10, 12)
+    );
+    var distance_divided = converter.hexToDec(
+      returnedDistanceValue.substring(12, 14)
+    );
+    var distances =
+      parseInt(distance_divided) * 256 + parseInt(distance_modulo);
+    var calories = converter.hexToDec(returnedDistanceValue.substring(18, 20));
+
+    this.setState({
+      start_steps: steps,
+      start_distance: distances,
+      start_calories: calories
+    });
+    this.updateDistanceArray();
+  }
+
+  async readCharacteristics(device) {
+    const service = "00001800-0000-1000-8000-00805f9b34fb";
+    const characteristicW = "00002a00-0000-1000-8000-00805f9b34fb";
+
+    const characteristic = await device.readCharacteristicForService(
+      service,
+      characteristicW
+    );
+    const returnedValue = Buffer.from(characteristic.value, "base64").toString(
+      "ascii"
+    );
+
+    const serviceSerial = "0000fee0-0000-1000-8000-00805f9b34fb";
+    const characteristicWSerial = "00000006-0000-3512-2118-0009af100700";
+
+    const characteristicSerial = await device.readCharacteristicForService(
+      serviceSerial,
+      characteristicWSerial
+    );
+
+    const serviceStep = "0000fee0-0000-1000-8000-00805f9b34fb";
+    const characteristicWStep = "00000007-0000-3512-2118-0009af100700";
+
+    const characteristicStep = await device.readCharacteristicForService(
+      serviceStep,
+      characteristicWStep
+    );
+    const returnedStepValue = Buffer.from(
+      characteristicStep.value,
+      "base64"
+    ).toString("hex");
+
+    var steps_modulo = converter.hexToDec(returnedStepValue.substring(2, 4));
+    var steps_divided = converter.hexToDec(returnedStepValue.substring(4, 6));
+    var steps = parseInt(steps_divided) * 256 + parseInt(steps_modulo);
+
+    const serviceDistance = "0000fee0-0000-1000-8000-00805f9b34fb";
+    const characteristicWDistance = "00000007-0000-3512-2118-0009af100700";
+
+    const characteristicDistance = await device.readCharacteristicForService(
+      serviceDistance,
+      characteristicWDistance
+    );
+    const returnedDistanceValue = Buffer.from(
+      characteristicDistance.value,
+      "base64"
+    ).toString("hex");
+
+    var distance_modulo = converter.hexToDec(
+      returnedDistanceValue.substring(10, 12)
+    );
+    var distance_divided = converter.hexToDec(
+      returnedDistanceValue.substring(12, 14)
+    );
+    var distances =
+      parseInt(distance_divided) * 256 + parseInt(distance_modulo);
+    var calories = converter.hexToDec(returnedDistanceValue.substring(18, 20));
+
+    this.setState({
+      name: returnedValue,
+      heart: returnedDistanceValue,
+      steps: steps - this.state.start_steps,
+      distance: distances - this.state.start_distance,
+      calories: calories - this.state.start_calories
+    });
+    this.updateDistanceArray();
   }
 
   fetchWeather() {
@@ -114,10 +350,6 @@ export default class ActivityInfo extends Component {
           console.error(error);
         });
     }, 5000);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.state.timer);
   }
 
   onButtonStartStop = () => {
@@ -162,7 +394,42 @@ export default class ActivityInfo extends Component {
     }
   };
 
+  publishDataActivity = () => {
+    fetch("http://192.168.0.3/smartActivity/publish_activity.php", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: "jasiu1047",
+        type: this.state.activityType,
+        date: this.state.date,
+        distance: this.state.distance,
+        steps: this.state.step,
+        calories: this.state.calories
+      })
+    })
+      .then(response => response.json())
+      .then(responseJson => {
+        Toast.showShortBottom(responseJson);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
+
   render() {
+    const { navigate } = this.props.navigation;
+    const { info } = this.state;
+    const { name } = this.state;
+    const { heart } = this.state;
+    const { steps } = this.state;
+    const { distance } = this.state;
+    const { speed } = this.state;
+    const { distanceDataArray } = this.state;
+    const { speedDataArray } = this.state;
+    const { calories } = this.state;
     const { isLoading } = this.state;
     const { isDay } = this.state;
     const { id } = this.state;
@@ -178,11 +445,10 @@ export default class ActivityInfo extends Component {
     const { cloudy } = this.state;
     const { humidity } = this.state;
     const { pressure } = this.state;
-
     return (
       <ImageBackground
-        source={require("../../assets/images/activity_background_black.jpg")}
-        style={{ flex: 1, width: "100%", height: "100%" }}
+        source={this.state.backgroundImageSource}
+        style={{ flex: 1, width: "100%", height: "100%", opacity: 0.9 }}
       >
         <Swiper
           style={styles.wrapper}
@@ -215,6 +481,70 @@ export default class ActivityInfo extends Component {
                   )}
                 </Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  navigate("ActivityMap", {
+                    distance_traveled: this.state.distance
+                  })
+                }
+                style={{
+                  width: 300,
+                  backgroundColor: "transparent",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  borderBottomColor: "rgba(0, 0, 0, 0.3)",
+                  borderBottomWidth: 0.5,
+                  marginLeft: 5,
+                  marginRight: 5,
+                  paddingVertical: 10,
+                  paddingHorizontal: 10,
+                  marginTop: 0
+                }}
+              >
+                <Icon1 name="location" color={"rgba(0, 0, 0, 0.6)"} size={14} />
+                <Text
+                  style={{
+                    fontFamily: "Quicksand-Light",
+                    fontSize: 14,
+                    color: "rgba(0, 0, 0, 0.6)",
+                    marginLeft: 5
+                  }}
+                >
+                  {" "}
+                  Pokaż na mapie
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={this.publishDataActivity}
+                style={{
+                  width: 300,
+                  backgroundColor: "transparent",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  borderBottomColor: "rgba(0, 0, 0, 0.3)",
+                  borderBottomWidth: 0.5,
+                  marginLeft: 5,
+                  marginRight: 5,
+                  paddingVertical: 10,
+                  paddingHorizontal: 10,
+                  marginTop: 0
+                }}
+              >
+                <Icon name="close" color={"rgba(0, 0, 0, 0.6)"} size={14} />
+                <Text
+                  style={{
+                    fontFamily: "Quicksand-Light",
+                    fontSize: 14,
+                    color: "rgba(0, 0, 0, 0.6)",
+                    marginLeft: 5
+                  }}
+                >
+                  {" "}
+                  Zakończ trening
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
           <View style={styles.slide2}>
@@ -230,7 +560,14 @@ export default class ActivityInfo extends Component {
               </View>
             </View>
             <View style={styles.activity_bottom_container}>
-              <ActivityDetails distance={humidity} />
+              <ActivityDetails
+                info={info}
+                steps={steps}
+                distance={distance}
+                distanceDataArray={distanceDataArray}
+                speedDataArray={speedDataArray}
+                calories={calories}
+              />
             </View>
           </View>
           <View style={styles.slide3}>
@@ -287,7 +624,7 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   activity_top_container: {
-    marginTop: 130,
+    marginTop: 120,
     width: "100%",
     height: "9%",
     flexDirection: "row",

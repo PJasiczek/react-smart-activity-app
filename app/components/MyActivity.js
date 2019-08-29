@@ -22,6 +22,7 @@ export default class Settings extends Component {
   };
 
   render() {
+    const { navigate } = this.props.navigation;
     const shadowOptButton = {
       position: "absolute",
       width: 50,
@@ -100,7 +101,11 @@ export default class Settings extends Component {
                       <BoxShadow setting={shadowOptButton}>
                         <TouchableOpacity
                           onPress={() =>
-                            this.props.navigation.navigate("ActivityInfo")
+                            navigate("ActivityInfo", {
+                              isRunning: true,
+                              backgroundImageSource: require("../../assets/images/cycling_background_black.jpg"),
+                              activityType: 1
+                            })
                           }
                           style={styles.activity_button}
                         >
@@ -146,7 +151,11 @@ export default class Settings extends Component {
                       <BoxShadow setting={shadowOptButton}>
                         <TouchableOpacity
                           onPress={() =>
-                            this.props.navigation.navigate("ActivityInfo")
+                            navigate("ActivityInfo", {
+                              isRunning: true,
+                              backgroundImageSource: require("../../assets/images/swim_background_black.jpg"),
+                              activityType: 2
+                            })
                           }
                           style={styles.activity_button}
                         >
@@ -164,7 +173,7 @@ export default class Settings extends Component {
                 <BoxShadow setting={shadowOptInnerContainer}>
                   <View style={styles.inner_container}>
                     <Image
-                      source={require("../../assets/images/surf_background_black.jpg")}
+                      source={require("../../assets/images/walk_background_black.jpg")}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -177,15 +186,14 @@ export default class Settings extends Component {
                     />
                     <View style={styles.text_container}>
                       <View style={styles.header_container}>
-                        <Text style={styles.text_header}>Surfing</Text>
+                        <Text style={styles.text_header}>Spacer</Text>
                       </View>
                       <View style={styles.description_container}>
                         <Text style={styles.text_description}>
-                          Największy efekt osiąga się na przybrzeżnych falach
-                          oceanicznych. Deska wyposażona w żagiel służy do
-                          uprawiania windsurfingu, deski do uprawiania
-                          kitesurfingu napędzane są rodzajem latawca -
-                          paralotni.
+                          Krótki spacer może sprawić, że poczujesz się lepiej,
+                          ponieważ jest to ćwiczenie aerobowe o małej
+                          intensywności, które może zapewnić Ci chwilę spokoju w
+                          środku pełnego napięć dnia.
                         </Text>
                       </View>
                     </View>
@@ -193,7 +201,11 @@ export default class Settings extends Component {
                       <BoxShadow setting={shadowOptButton}>
                         <TouchableOpacity
                           onPress={() =>
-                            this.props.navigation.navigate("ActivityInfo")
+                            navigate("ActivityInfo", {
+                              isRunning: true,
+                              backgroundImageSource: require("../../assets/images/walk_background_black.jpg"),
+                              activityType: 3
+                            })
                           }
                           style={styles.activity_button}
                         >
@@ -240,7 +252,11 @@ export default class Settings extends Component {
                       <BoxShadow setting={shadowOptButton}>
                         <TouchableOpacity
                           onPress={() =>
-                            this.props.navigation.navigate("ActivityInfo")
+                            navigate("ActivityInfo", {
+                              isRunning: true,
+                              backgroundImageSource: require("../../assets/images/run_background_black.jpg"),
+                              activityType: 4
+                            })
                           }
                           style={styles.activity_button}
                         >

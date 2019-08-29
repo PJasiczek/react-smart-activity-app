@@ -11,10 +11,19 @@ import {
 } from "react-native";
 import { ProgressCircle, LineChart } from "react-native-svg-charts";
 import Icon from "react-native-vector-icons/FontAwesome";
+import Toast from "@remobile/react-native-toast";
 
 const { height } = Dimensions.get("window");
 
-const ActivityDetails = ({ distance }) => {
+const ActivityDetails = ({
+  info,
+  steps,
+  distance,
+  speed,
+  distanceDataArray,
+  speedDataArray,
+  calories
+}) => {
   const data = [
     distance,
     10,
@@ -55,7 +64,7 @@ const ActivityDetails = ({ distance }) => {
                   }}
                 >
                   <View style={styles.progress_circle_container}>
-                    <Text style={styles.distance}>14.54 km</Text>
+                    <Text style={styles.distance}>{distance} m</Text>
                   </View>
                 </ProgressCircle>
               </View>
@@ -71,26 +80,16 @@ const ActivityDetails = ({ distance }) => {
                   svg={{ stroke: "rgb(35, 35, 35)", strokeWidth: 3 }}
                   contentInset={{ top: 20, bottom: 20 }}
                 />
-                <Text style={styles.avg_pace}>4:49 min/km </Text>
+                <Text style={styles.avg_pace}> {info} min/km</Text>
               </View>
             </View>
             <View style={styles.inner_container}>
               <View style={styles.inner_top_container}>
-                <Text style={styles.height_increase_label}>
-                  Wzrost wysokości
-                </Text>
-              </View>
-              <View style={styles.inner_bottom_container}>
-                <Text style={styles.height_increase}>70 m </Text>
-              </View>
-            </View>
-            <View style={styles.inner_container}>
-              <View style={styles.inner_top_container}>
-                <Text style={styles.calories_label}>Kalorie</Text>
+                <Text style={styles.steps_label}>Kroki</Text>
               </View>
               <View style={styles.inner_bottom_container}>
                 <ProgressCircle
-                  progress={0.2}
+                  progress={steps / 6500}
                   progressColor={"rgb(35, 35, 35)"}
                   strokeWidth={7}
                   style={{
@@ -102,9 +101,62 @@ const ActivityDetails = ({ distance }) => {
                   }}
                 >
                   <View style={styles.progress_circle_container}>
-                    <Text style={styles.calories}>1,047 C </Text>
+                    <Text style={styles.steps}>{steps} </Text>
                   </View>
                 </ProgressCircle>
+              </View>
+            </View>
+            <View style={styles.inner_container}>
+              <View style={styles.inner_top_container}>
+                <Text style={styles.calories_label}>Kalorie</Text>
+              </View>
+              <View style={styles.inner_bottom_container}>
+                <ProgressCircle
+                  progress={calories / 500}
+                  progressColor={"rgb(35, 35, 35)"}
+                  strokeWidth={7}
+                  style={{
+                    height: 100,
+                    width: 100,
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center"
+                  }}
+                >
+                  <View style={styles.progress_circle_container}>
+                    <Text style={styles.calories}>{calories} C </Text>
+                  </View>
+                </ProgressCircle>
+              </View>
+            </View>
+            <View style={styles.inner_container}>
+              <View style={styles.inner_top_container}>
+                <Text style={styles.height_increase_label}>
+                  Wzrost wysokości
+                </Text>
+              </View>
+              <View style={styles.inner_bottom_container}>
+                <LineChart
+                  style={{ height: 100, width: 100 }}
+                  data={distanceDataArray}
+                  svg={{ stroke: "rgb(35, 35, 35)", strokeWidth: 3 }}
+                  contentInset={{ top: 20, bottom: 20 }}
+                />
+                <Text style={styles.height_increase}>{steps} </Text>
+              </View>
+            </View>
+            <View style={styles.inner_container}>
+              <View style={styles.inner_top_container}>
+                <Text style={styles.speed_label}>Prędkość</Text>
+              </View>
+              <View style={styles.inner_bottom_container}>
+                <LineChart
+                  style={{ height: 100, width: 100 }}
+                  data={speedDataArray}
+                  svg={{ stroke: "rgb(35, 35, 35)", strokeWidth: 3 }}
+                  contentInset={{ top: 20, bottom: 20 }}
+                />
+                <Text style={styles.speed}>{distance / 1000} km/h </Text>
               </View>
             </View>
             <View style={styles.inner_container_heart_beat}>
@@ -144,7 +196,7 @@ const styles = StyleSheet.create({
   },
   top_container: {
     width: Dimensions.get("window").width,
-    height: 800,
+    height: 1000,
     backgroundColor: "transparent",
     flexDirection: "row",
     justifyContent: "center",
@@ -262,6 +314,16 @@ const styles = StyleSheet.create({
     color: "#000000",
     fontSize: 15
   },
+  steps: {
+    fontFamily: "Quicksand-Light",
+    color: "#000000",
+    fontSize: 15
+  },
+  speed: {
+    fontFamily: "Quicksand-Light",
+    color: "#000000",
+    fontSize: 15
+  },
   distance_label: {
     fontFamily: "Quicksand-Light",
     color: "#000000",
@@ -279,6 +341,16 @@ const styles = StyleSheet.create({
     fontSize: 13
   },
   calories_label: {
+    fontFamily: "Quicksand-Light",
+    color: "#000000",
+    fontSize: 13
+  },
+  steps_label: {
+    fontFamily: "Quicksand-Light",
+    color: "#000000",
+    fontSize: 13
+  },
+  speed_label: {
     fontFamily: "Quicksand-Light",
     color: "#000000",
     fontSize: 13
