@@ -43,7 +43,7 @@ export default class Settings extends Component {
       height: Dimensions.get("window").height * 0.73,
       color: "#000000",
       border: 6,
-      radius: 45,
+      radius: 40,
       opacity: 0.2,
       x: 2,
       y: 5,
@@ -51,13 +51,13 @@ export default class Settings extends Component {
     };
     return (
       <LinearGradient
-        colors={["rgba(0,0,0,0.3)", "transparent"]}
+        colors={["rgba(0,0,0,0.5)", "transparent"]}
         style={{
           position: "absolute",
           left: 0,
           right: 0,
           top: 0,
-          height: "100%"
+          height: "150%"
         }}
       >
         <View style={styles.container}>
@@ -103,7 +103,7 @@ export default class Settings extends Component {
                           onPress={() =>
                             navigate("ActivityInfo", {
                               isRunning: true,
-                              backgroundImageSource: require("../../assets/images/cycling_background_black.jpg"),
+                              backgroundImageSource: require("../../assets/images/cycling_background_opacity.jpg"),
                               activityType: 1
                             })
                           }
@@ -153,7 +153,7 @@ export default class Settings extends Component {
                           onPress={() =>
                             navigate("ActivityInfo", {
                               isRunning: true,
-                              backgroundImageSource: require("../../assets/images/swim_background_black.jpg"),
+                              backgroundImageSource: require("../../assets/images/swim_background_opacity.jpg"),
                               activityType: 2
                             })
                           }
@@ -203,7 +203,7 @@ export default class Settings extends Component {
                           onPress={() =>
                             navigate("ActivityInfo", {
                               isRunning: true,
-                              backgroundImageSource: require("../../assets/images/walk_background_black.jpg"),
+                              backgroundImageSource: require("../../assets/images/walk_background_opacity.jpg"),
                               activityType: 3
                             })
                           }
@@ -223,7 +223,7 @@ export default class Settings extends Component {
                 <BoxShadow setting={shadowOptInnerContainer}>
                   <View style={styles.inner_container}>
                     <Image
-                      source={require("../../assets/images/run_background_black.jpg")}
+                      source={require("../../assets/images/run_background_black_1.jpg")}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -254,7 +254,7 @@ export default class Settings extends Component {
                           onPress={() =>
                             navigate("ActivityInfo", {
                               isRunning: true,
-                              backgroundImageSource: require("../../assets/images/run_background_black.jpg"),
+                              backgroundImageSource: require("../../assets/images/run_background_opacity_1.jpg"),
                               activityType: 4
                             })
                           }

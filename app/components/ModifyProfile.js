@@ -8,13 +8,13 @@ import {
   View,
   Image,
   TouchableOpacity,
-  TextInput,
   KeyboardAvoidingView,
   ScrollView,
   Dimensions,
   Alert,
   Picker,
-  Button
+  Button,
+  TextInput
 } from "react-native";
 import Toast from "@remobile/react-native-toast";
 import LinearGradient from "react-native-linear-gradient";
@@ -130,7 +130,7 @@ export default class ModifyProfile extends Component {
 
   uploadPhoto = async imageUri => {
     this.setState({ isUploading: true });
-    let baseUrl = "http://192.168.0.2/smartActivity/";
+    let baseUrl = "http://192.168.0.3/smartActivity/";
     let uploadData = new FormData();
 
     uploadData.append("submit", "ok");

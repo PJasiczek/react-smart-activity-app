@@ -30,7 +30,7 @@ export default class Login extends Component {
     const { UserUserName } = this.state;
     const { UserPassword } = this.state;
 
-    fetch("http://192.168.0.2/smartActivity/user_login.php", {
+    fetch("http://192.168.0.3/smartActivity/user_login.php", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -96,7 +96,11 @@ export default class Login extends Component {
             style={styles.input}
           />
           <TouchableOpacity
-            onPress={() => this.props.navigation.navigate("UserHome")}
+            onPress={() =>
+              this.props.navigation.navigate("UserHome", {
+                username: this.state.UserUserName
+              })
+            }
             //onPress={this.UserLoginFunction}
             style={{
               backgroundColor: "#000000",

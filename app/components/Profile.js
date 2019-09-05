@@ -8,6 +8,8 @@ import {
   Dimensions
 } from "react-native";
 import { DrawerActions } from "react-navigation";
+import { ProgressCircle } from "react-native-svg-charts";
+import { ConfirmDialog } from "react-native-simple-dialogs";
 import Icon from "react-native-vector-icons/Ionicons";
 import Icon1 from "react-native-vector-icons/MaterialCommunityIcons";
 import LinearGradient from "react-native-linear-gradient";
@@ -46,7 +48,7 @@ export default class Profile extends Component {
                 onPress={() => this.props.navigation.navigate("Settings")}
                 style={styles.settings_button}
               >
-                <Icon1 name="settings" size={20} />
+                <Icon1 name="settings" size={20} color={"#000000"} />
               </TouchableOpacity>
               <View style={styles.icon_container}>
                 <TouchableOpacity
@@ -67,7 +69,7 @@ export default class Profile extends Component {
               </View>
 
               <Text style={styles.header}>Piotr Jasiczek</Text>
-              <Text style={styles.pre_header}>Świdnica</Text>
+              <Text style={styles.pre_header}>Polska</Text>
             </View>
             <View style={styles.top_middle_container}>
               <View style={styles.inner_top_container}>
@@ -131,7 +133,73 @@ export default class Profile extends Component {
             </View>
           </View>
           <View style={styles.border_bottom} />
-          <View style={styles.bottom_container} />
+          <View style={styles.bottom_container}>
+            <View style={styles.inner_bottom_top_container}>
+              <Text style={styles.day_activity_header}>
+                Dzisiejsza aktywność
+              </Text>
+            </View>
+            <View style={styles.inner_bottom_bottom_container}>
+              <ProgressCircle
+                progress={0.3}
+                progressColor={"rgb(35, 35, 35)"}
+                strokeWidth={6}
+                style={{
+                  position: "absolute",
+                  left: Dimensions.get("window").width * 0.075,
+                  height: Dimensions.get("window").height * 0.3,
+                  width: Dimensions.get("window").width * 0.3,
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 1
+                }}
+              >
+                <View style={styles.progress_circle_container}>
+                  <Text style={styles.steps_label}>Kroki</Text>
+                  <Text style={styles.progress_circle_header}>5000</Text>
+                </View>
+              </ProgressCircle>
+              <ProgressCircle
+                progress={0.7}
+                progressColor={"rgb(35, 35, 35)"}
+                strokeWidth={7}
+                style={{
+                  height: Dimensions.get("window").height * 0.4,
+                  width: Dimensions.get("window").width * 0.4,
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 2
+                }}
+              >
+                <View style={styles.progress_circle_distance_container}>
+                  <Text style={styles.distance_label}>Dystans</Text>
+                  <Text style={styles.progress_circle_header}>1500 m</Text>
+                </View>
+              </ProgressCircle>
+              <ProgressCircle
+                progress={0.6}
+                progressColor={"rgb(35, 35, 35)"}
+                strokeWidth={6}
+                style={{
+                  position: "absolute",
+                  right: Dimensions.get("window").width * 0.075,
+                  height: Dimensions.get("window").height * 0.3,
+                  width: Dimensions.get("window").width * 0.3,
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 1
+                }}
+              >
+                <View style={styles.progress_circle_container}>
+                  <Text style={styles.calories_header}>Kalorie</Text>
+                  <Text style={styles.progress_circle_header}>140 C</Text>
+                </View>
+              </ProgressCircle>
+            </View>
+          </View>
         </View>
       </LinearGradient>
     );
@@ -211,9 +279,47 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "10deg" }]
   },
   bottom_container: {
+    position: "relative",
     width: "100%",
     height: "47%",
-    backgroundColor: "transparent"
+    backgroundColor: "transparent",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  inner_bottom_top_container: {
+    position: "relative",
+    width: "100%",
+    height: "8%",
+    backgroundColor: "transparent",
+    flexDirection: "row",
+    paddingHorizontal: 40
+  },
+  inner_bottom_bottom_container: {
+    position: "relative",
+    width: "100%",
+    height: "74%",
+    backgroundColor: "transparent",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  progress_circle_distance_container: {
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2
+  },
+  progress_circle_container: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    zIndex: 2
+  },
+  progress_circle_header: {
+    fontFamily: "Quicksand-Light",
+    color: "#000000",
+    fontSize: 15
   },
   bottom_bottom_container: {
     width: "100%",
@@ -289,6 +395,11 @@ const styles = StyleSheet.create({
     borderColor: "#ffffff",
     borderWidth: 4
   },
+  day_activity_header: {
+    fontFamily: "Quicksand-Light",
+    color: "#000000",
+    fontSize: 14
+  },
   header: {
     marginTop: 10,
     fontFamily: "Quicksand-Bold",
@@ -299,6 +410,21 @@ const styles = StyleSheet.create({
     fontFamily: "Quicksand-Light",
     color: "#777777",
     fontSize: 13
+  },
+  steps_label: {
+    fontFamily: "Quicksand-Light",
+    color: "#000000",
+    fontSize: 14
+  },
+  distance_label: {
+    fontFamily: "Quicksand-Light",
+    color: "#000000",
+    fontSize: 15
+  },
+  calories_header: {
+    fontFamily: "Quicksand-Light",
+    color: "#000000",
+    fontSize: 14
   },
   menu_button: {
     width: 25,

@@ -4,12 +4,11 @@ import { createDrawerNavigator, createAppContainer } from "react-navigation";
 
 import Profile from "../Profile";
 import MyActivity from "../MyActivity";
-import Map from "../Map";
 import ActivityMap from "../ActivityMap";
 import ActivityInfo from "../ActivityInfo";
 import ActivityHistory from "../ActivityHistory";
+import Map from "../Map";
 import Settings from "../Settings";
-import Bluetooth from "../Bluetooth";
 import CreateAccount from "../CreateAccount";
 import ModifyProfile from "../ModifyProfile";
 
@@ -19,12 +18,11 @@ const NavigationStack = createDrawerNavigator(
   {
     Profile: { screen: Profile },
     MyActivity: { screen: MyActivity },
-    Map: { screen: Map },
     ActivityMap: { screen: ActivityMap },
     ActivityInfo: { screen: ActivityInfo },
     ActivityHistory: { screen: ActivityHistory },
+    Map: { screen: Map },
     Settings: { screen: Settings },
-    Bluetooth: { screen: Bluetooth },
     CreateAccount: { screen: CreateAccount },
     ModifyProfile: { screen: ModifyProfile }
   },

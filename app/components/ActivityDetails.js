@@ -16,13 +16,17 @@ import Toast from "@remobile/react-native-toast";
 const { height } = Dimensions.get("window");
 
 const ActivityDetails = ({
+  stoper,
   info,
   steps,
   distance,
+  pace,
   speed,
+  calories,
+  paceDataArray,
+  heightIncreaseDataArray,
   distanceDataArray,
-  speedDataArray,
-  calories
+  speedDataArray
 }) => {
   const data = [
     distance,
@@ -52,7 +56,7 @@ const ActivityDetails = ({
               </View>
               <View style={styles.inner_bottom_container}>
                 <ProgressCircle
-                  progress={0.7}
+                  progress={distance / 6500}
                   progressColor={"rgb(35, 35, 35)"}
                   strokeWidth={7}
                   style={{
@@ -64,7 +68,7 @@ const ActivityDetails = ({
                   }}
                 >
                   <View style={styles.progress_circle_container}>
-                    <Text style={styles.distance}>{distance} m</Text>
+                    <Text style={styles.distance}>{distance} km</Text>
                   </View>
                 </ProgressCircle>
               </View>
@@ -76,11 +80,11 @@ const ActivityDetails = ({
               <View style={styles.inner_bottom_container}>
                 <LineChart
                   style={{ height: 100, width: 100 }}
-                  data={data}
+                  data={paceDataArray}
                   svg={{ stroke: "rgb(35, 35, 35)", strokeWidth: 3 }}
                   contentInset={{ top: 20, bottom: 20 }}
                 />
-                <Text style={styles.avg_pace}> {info} min/km</Text>
+                <Text style={styles.avg_pace}> {pace} min/km</Text>
               </View>
             </View>
             <View style={styles.inner_container}>
@@ -101,7 +105,7 @@ const ActivityDetails = ({
                   }}
                 >
                   <View style={styles.progress_circle_container}>
-                    <Text style={styles.steps}>{steps} </Text>
+                    <Text style={styles.steps}>{steps}</Text>
                   </View>
                 </ProgressCircle>
               </View>
@@ -124,7 +128,7 @@ const ActivityDetails = ({
                   }}
                 >
                   <View style={styles.progress_circle_container}>
-                    <Text style={styles.calories}>{calories} C </Text>
+                    <Text style={styles.calories}> {calories} C</Text>
                   </View>
                 </ProgressCircle>
               </View>
@@ -138,7 +142,7 @@ const ActivityDetails = ({
               <View style={styles.inner_bottom_container}>
                 <LineChart
                   style={{ height: 100, width: 100 }}
-                  data={distanceDataArray}
+                  data={heightIncreaseDataArray}
                   svg={{ stroke: "rgb(35, 35, 35)", strokeWidth: 3 }}
                   contentInset={{ top: 20, bottom: 20 }}
                 />
@@ -156,7 +160,7 @@ const ActivityDetails = ({
                   svg={{ stroke: "rgb(35, 35, 35)", strokeWidth: 3 }}
                   contentInset={{ top: 20, bottom: 20 }}
                 />
-                <Text style={styles.speed}>{distance / 1000} km/h </Text>
+                <Text style={styles.speed}>{speed} km/h </Text>
               </View>
             </View>
             <View style={styles.inner_container_heart_beat}>
@@ -166,7 +170,7 @@ const ActivityDetails = ({
                 </View>
                 <View style={styles.inner_top_right_container_heart_beat}>
                   <View style={styles.heart_beat_container}>
-                    <Text style={styles.heart_beat}>129</Text>
+                    <Text style={styles.heart_beat}>N/A</Text>
                     <Text style={styles.heart_beat_label}>bpm</Text>
                   </View>
                 </View>

@@ -84,6 +84,27 @@ export default class DrawerComponent extends Component {
           <View
             style={[
               styles.navigator_container,
+              this.props.activeItemKey == "ActivityInfo"
+                ? styles.selected_item
+                : null
+            ]}
+          >
+            <Icon name="pulse" style={styles.icons} />
+            <Text
+              style={[
+                styles.text_style,
+                this.props.activeItemKey == "ActivityInfo"
+                  ? styles.selected_text
+                  : null
+              ]}
+              onPress={this.navigateToScreen("ActivityInfo")}
+            >
+              Centrum aktywności
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.navigator_container,
               this.props.activeItemKey == "ActivityHistory"
                 ? styles.selected_item
                 : null
@@ -122,27 +143,6 @@ export default class DrawerComponent extends Component {
           <View
             style={[
               styles.navigator_container,
-              this.props.activeItemKey == "ActivityInfo"
-                ? styles.selected_item
-                : null
-            ]}
-          >
-            <Icon name="pulse" style={styles.icons} />
-            <Text
-              style={[
-                styles.text_style,
-                this.props.activeItemKey == "ActivityInfo"
-                  ? styles.selected_text
-                  : null
-              ]}
-              onPress={this.navigateToScreen("ActivityInfo")}
-            >
-              Centrum aktywności
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.navigator_container,
               this.props.activeItemKey == "Settings"
                 ? styles.selected_item
                 : null
@@ -159,27 +159,6 @@ export default class DrawerComponent extends Component {
               onPress={this.navigateToScreen("Settings")}
             >
               Ustawienia
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.navigator_container,
-              this.props.activeItemKey == "Bluetooth"
-                ? styles.selected_item
-                : null
-            ]}
-          >
-            <Icon name="settings" style={styles.icons} />
-            <Text
-              style={[
-                styles.text_style,
-                this.props.activeItemKey == "Bluetooth"
-                  ? styles.selected_text
-                  : null
-              ]}
-              onPress={this.navigateToScreen("Bluetooth")}
-            >
-              Bluetooth
             </Text>
           </View>
         </View>

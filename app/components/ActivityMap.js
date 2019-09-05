@@ -42,7 +42,7 @@ export default class ActivityMap extends Component {
       altitude: 0,
       speed: 0,
       routeCoordinates: [],
-      distanceTravelled: this.props.navigation.state.params.distance_traveled,
+      distanceTravelled: this.props.navigation.state.params.distance,
       prevLatLng: {},
       coordinate: new AnimatedRegion({
         latitude: LATITUDE,
@@ -191,7 +191,7 @@ export default class ActivityMap extends Component {
                 <View style={styles.inner_top_top_container} />
                 <View style={styles.inner_top_bottom_container}>
                   <Text style={styles.distance}>
-                    {parseFloat(this.state.distanceTravelled / 1000).toFixed(2)}{" "}
+                    {parseFloat(this.state.distanceTravelled).toFixed(2)}{" "}
                     <Text style={styles.distance_label}>km</Text>
                   </Text>
                 </View>

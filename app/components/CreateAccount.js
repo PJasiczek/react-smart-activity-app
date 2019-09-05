@@ -53,7 +53,7 @@ export default class CreateAccount extends Component {
   }
 
   UserModifyFunction = () => {
-    fetch("http://192.168.0.2/smartActivity/user_account_modify.php", {
+    fetch("http://192.168.0.3/smartActivity/user_account_modify.php", {
       method: "PUT",
       headers: {
         Accept: "application/json",
@@ -95,7 +95,7 @@ export default class CreateAccount extends Component {
 
   uploadPhoto = async imageUri => {
     this.setState({ isUploading: true });
-    let baseUrl = "http://192.168.0.2/smartActivity/";
+    let baseUrl = "http://192.168.0.3/smartActivity/";
     let uploadData = new FormData();
 
     uploadData.append("submit", "ok");

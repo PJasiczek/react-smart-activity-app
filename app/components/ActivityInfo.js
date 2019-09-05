@@ -30,6 +30,7 @@ import Icon1 from "react-native-vector-icons/Entypo";
 import { BleManager } from "react-native-ble-plx";
 import { Buffer } from "buffer";
 import Toast from "@remobile/react-native-toast";
+import { Dialog } from 'react-native-simple-dialogs';
 import moment from "moment";
 import "moment/locale/pl";
 
@@ -53,9 +54,15 @@ export default class ActivityInfo extends Component {
         .backgroundImageSource,
       isRunning: this.props.navigation.state.params.isRunning,
       activityType: this.props.navigation.state.params.activityType,
+      paceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      heightIncreaseDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      distanceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      speedDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       isLoading: true,
       iDay: true,
+      dialogVisible: true,
       timer: null,
+      stoper: "",
       date: "",
       hours: "",
       minutes: "00",
@@ -64,15 +71,14 @@ export default class ActivityInfo extends Component {
       info: "",
       name: "",
       serial_number: "",
-      distanceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      speedDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       start_distance: "",
       distance: "",
-      speed: "",
       steps: "",
       start_steps: "",
       calories: "",
       start_calories: "",
+      speed: "",
+      pace: "",
       heart: "",
       id: 0,
       description: null,
@@ -124,11 +130,17 @@ export default class ActivityInfo extends Component {
   }
 
   updateDistanceArray() {
+    this.state.paceDataArray.shift();
+    this.state.paceDataArray.push(this.state.pace);
+
+    this.state.heightIncreaseDataArray.shift();
+    this.state.heightIncreaseDataArray.push(this.state.distance);
+
     this.state.distanceDataArray.shift();
     this.state.distanceDataArray.push(this.state.distance);
 
     this.state.speedDataArray.shift();
-    this.state.speedDataArray.push(this.state.distance / 1000);
+    this.state.speedDataArray.push(this.state.speed);
   }
 
   info(message) {
@@ -307,8 +319,18 @@ export default class ActivityInfo extends Component {
       name: returnedValue,
       heart: returnedDistanceValue,
       steps: steps - this.state.start_steps,
-      distance: distances - this.state.start_distance,
-      calories: calories - this.state.start_calories
+      distance: (distances - this.state.start_distance) / 1000,
+      calories: calories - this.state.start_calories,
+      pace:
+        this.state.distance == ""
+          ? 0
+          : parseFloat((this.state.stoper * 60) / this.state.distance).toFixed(
+              2
+            ),
+      speed:
+        this.state.distance == ""
+          ? 0
+          : parseFloat(this.state.distance / this.state.stoper).toFixed(2)
     });
     this.updateDistanceArray();
   }
@@ -382,7 +404,13 @@ export default class ActivityInfo extends Component {
           miliseconds:
             milisecondsCount.length == 1
               ? "0" + milisecondsCount
-              : milisecondsCount
+              : milisecondsCount,
+          stoper: (
+            (Number(this.state.seconds) +
+              Number(this.state.minutes) * 60 +
+              Number(this.state.hours) * 3600) /
+            3600
+          ).toString()
         });
       }, 100);
       this.setState({ timer });
@@ -421,15 +449,19 @@ export default class ActivityInfo extends Component {
 
   render() {
     const { navigate } = this.props.navigation;
+    const { stoper } = this.state;
     const { info } = this.state;
     const { name } = this.state;
     const { heart } = this.state;
     const { steps } = this.state;
     const { distance } = this.state;
+    const { pace } = this.state;
     const { speed } = this.state;
+    const { calories } = this.state;
+    const { paceDataArray } = this.state;
+    const { heightIncreaseDataArray } = this.state;
     const { distanceDataArray } = this.state;
     const { speedDataArray } = this.state;
-    const { calories } = this.state;
     const { isLoading } = this.state;
     const { isDay } = this.state;
     const { id } = this.state;
@@ -445,6 +477,23 @@ export default class ActivityInfo extends Component {
     const { cloudy } = this.state;
     const { humidity } = this.state;
     const { pressure } = this.state;
+
+    if(this.state.dialogVisible) {
+      return (
+        <Dialog
+          visible={this.state.dialogVisible}
+          onTouchOutside={() => this.setState({dialogVisible: false})} >
+          <View style={styles.dialog_container}>
+            <View style={styles.dialog_header_container}>
+              <Text style={styles.dialog_header}>
+                {this.state.info}
+              </Text>
+            </View>
+            <MaterialIndicator size={60} color="#000000" />
+          </View>
+        </Dialog>
+      )
+    }
     return (
       <ImageBackground
         source={this.state.backgroundImageSource}
@@ -475,16 +524,16 @@ export default class ActivityInfo extends Component {
               >
                 <Text>
                   {this.state.isRunning ? (
-                    <Icon name="play" color={"#000000"} size={45} />
+                    <Icon name="play" color={"rgba(0, 0, 0, 1.0)"} size={45} />
                   ) : (
-                    <Icon name="pause" color={"#777777"} size={45} />
+                    <Icon name="pause" color={"rgba(0, 0, 0, 0.1)"} size={45} />
                   )}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() =>
                   navigate("ActivityMap", {
-                    distance_traveled: this.state.distance
+                    distance: this.state.distance
                   })
                 }
                 style={{
@@ -553,20 +602,30 @@ export default class ActivityInfo extends Component {
                 <Text style={styles.activity_date}>{this.state.date}</Text>
               </View>
               <View style={styles.icon_container}>
-                <Image
-                  style={styles.icon}
-                  source={require("../../assets/images/profil_icon.png")}
-                />
+                <TouchableOpacity
+                  onPress={() => this.props.navigation.navigate("Profile")}
+                  style={styles.profile_action_container}
+                >
+                  <Image
+                    style={styles.icon}
+                    source={require("../../assets/images/profil_icon.png")}
+                  />
+                </TouchableOpacity>
               </View>
             </View>
             <View style={styles.activity_bottom_container}>
               <ActivityDetails
+                stoper={stoper}
                 info={info}
                 steps={steps}
                 distance={distance}
+                pace={pace}
+                speed={speed}
+                calories={calories}
+                paceDataArray={paceDataArray}
+                heightIncreaseDataArray={heightIncreaseDataArray}
                 distanceDataArray={distanceDataArray}
                 speedDataArray={speedDataArray}
-                calories={calories}
               />
             </View>
           </View>
@@ -608,10 +667,27 @@ export default class ActivityInfo extends Component {
         </TouchableOpacity>
       </ImageBackground>
     );
-  }
+}
 }
 
 const styles = StyleSheet.create({
+  dialog_container: {
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  dialog_header_container: {
+    width: "100%",
+    height: "20%",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  dialog_header: {
+    fontFamily: "Quicksand-Light",
+    fontSize: 15,
+    color: "rgba(0,0,0,0.7)",
+  },
   wrapper: {},
   slide1: {
     flex: 1,
@@ -644,6 +720,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderColor: "rgba(152,152,152,0.3)",
     borderWidth: 0.5
+  },
+  profile_action_container: {
+    width: 40,
+    height: 40,
+    zIndex: 3
   },
   icon: {
     flex: 1,

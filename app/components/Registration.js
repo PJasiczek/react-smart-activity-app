@@ -71,7 +71,7 @@ export default class Registration extends Component {
   }
 
   UserRegistrationFunction = () => {
-    fetch("http://192.168.0.2/smartActivity/user_registration.php", {
+    fetch("http://192.168.0.3/smartActivity/user_registration.php", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -197,7 +197,7 @@ export default class Registration extends Component {
   };
 
   componentDidMount() {
-    return fetch("http://192.168.0.2/smartActivity/country_list.php")
+    return fetch("http://192.168.0.3/smartActivity/country_list.php")
       .then(response => response.json())
       .then(responseJson => {
         this.setState(
