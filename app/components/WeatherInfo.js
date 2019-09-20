@@ -12,7 +12,6 @@ const WeatherInfo = ({
   temperature,
   temp_min,
   temp_max,
-  location,
   wind,
   visibility,
   direction,

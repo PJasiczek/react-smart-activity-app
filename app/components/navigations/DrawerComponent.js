@@ -4,6 +4,7 @@ import { Text, View, StyleSheet, ImageBackground, Image } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Icon1 from "react-native-vector-icons/Entypo";
 import Icon2 from "react-native-vector-icons/FontAwesome5";
+import Icon3 from "react-native-vector-icons/Ionicons";
 
 export default class DrawerComponent extends Component {
   navigateToScreen = route => () => {
@@ -47,7 +48,10 @@ export default class DrawerComponent extends Component {
                 : null
             ]}
           >
-            <Icon name="account" style={styles.icons} />
+            <Image
+              style={styles.iconss}
+              source={require("../../../assets/images/icons/profile.png")}
+            />
             <Text
               style={[
                 styles.text_style,
@@ -68,7 +72,10 @@ export default class DrawerComponent extends Component {
                 : null
             ]}
           >
-            <Icon1 name="stopwatch" style={styles.icons} />
+            <Image
+              style={styles.iconss}
+              source={require("../../../assets/images/icons/stopwatch.png")}
+            />
             <Text
               style={[
                 styles.text_style,
@@ -81,27 +88,32 @@ export default class DrawerComponent extends Component {
               Treningi
             </Text>
           </View>
-          <View
-            style={[
-              styles.navigator_container,
-              this.props.activeItemKey == "ActivityInfo"
-                ? styles.selected_item
-                : null
-            ]}
-          >
-            <Icon name="pulse" style={styles.icons} />
-            <Text
+          {global.isActivityVisible == true ? (
+            <View
               style={[
-                styles.text_style,
+                styles.navigator_container,
                 this.props.activeItemKey == "ActivityInfo"
-                  ? styles.selected_text
+                  ? styles.selected_item
                   : null
               ]}
-              onPress={this.navigateToScreen("ActivityInfo")}
             >
-              Centrum aktywności
-            </Text>
-          </View>
+              <Image
+                style={styles.iconss}
+                source={require("../../../assets/images/icons/heartbeat.png")}
+              />
+              <Text
+                style={[
+                  styles.text_style,
+                  this.props.activeItemKey == "ActivityInfo"
+                    ? styles.selected_text
+                    : null
+                ]}
+                onPress={this.navigateToScreen("ActivityInfo")}
+              >
+                Centrum aktywności
+              </Text>
+            </View>
+          ) : null}
           <View
             style={[
               styles.navigator_container,
@@ -110,7 +122,10 @@ export default class DrawerComponent extends Component {
                 : null
             ]}
           >
-            <Icon name="history" style={styles.icons} />
+            <Image
+              style={styles.iconss}
+              source={require("../../../assets/images/icons/history.png")}
+            />
             <Text
               style={[
                 styles.text_style,
@@ -129,7 +144,12 @@ export default class DrawerComponent extends Component {
               this.props.activeItemKey == "Map" ? styles.selected_item : null
             ]}
           >
-            <Icon name="run" style={styles.icons} />
+            <Icon
+              name="run"
+              style={styles.iconss_icon}
+              size={21}
+              color="#000000"
+            />
             <Text
               style={[
                 styles.text_style,
@@ -148,7 +168,10 @@ export default class DrawerComponent extends Component {
                 : null
             ]}
           >
-            <Icon name="settings" style={styles.icons} />
+            <Image
+              style={styles.iconss}
+              source={require("../../../assets/images/icons/settings.png")}
+            />
             <Text
               style={[
                 styles.text_style,
@@ -214,7 +237,7 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     textAlign: "left",
     fontFamily: "Quicksand-Bold",
-    color: "#777777",
+    color: "rgba(0,0,0,0.8)",
     fontSize: 14
   },
   screen_container: {
@@ -230,7 +253,7 @@ const styles = StyleSheet.create({
   },
   text_style: {
     fontFamily: "Quicksand-Bold",
-    color: "#777777",
+    color: "rgba(0,0,0,0.8)",
     fontSize: 16,
     marginLeft: 15,
     textAlign: "center",
@@ -242,8 +265,16 @@ const styles = StyleSheet.create({
   },
   icons: {
     marginLeft: 15,
-    color: "#777777",
+    color: "rgba(0,0,0,0.8)",
     fontSize: 20
+  },
+  iconss: {
+    marginLeft: 15,
+    width: 16,
+    height: 16
+  },
+  iconss_icon: {
+    marginLeft: 11
   },
   selected_item: {
     backgroundColor: "#f2f2f2"

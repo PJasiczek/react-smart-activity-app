@@ -6,18 +6,90 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
   ScrollView
 } from "react-native";
+import {
+  BallIndicator,
+  BarIndicator,
+  DotIndicator,
+  MaterialIndicator,
+  PacmanIndicator,
+  PulseIndicator,
+  SkypeIndicator,
+  UIActivityIndicator,
+  WaveIndicator
+} from "react-native-indicators";
 import { DrawerActions } from "react-navigation";
 import LinearGradient from "react-native-linear-gradient";
-import Icon from "react-native-vector-icons/FontAwesome5";
-import Icon1 from "react-native-vector-icons/MaterialCommunityIcons";
-import Icon2 from "react-native-vector-icons/Entypo";
+import Icon from "react-native-vector-icons/Entypo";
+
+import { activityTypesIcon } from "./utils/ActivityTypes";
 
 const { width, height } = Dimensions.get("window");
 
 export default class ActivityHistory extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      isLoading: true,
+      dataSource: []
+    };
+  }
+
+  componentDidMount() {
+    fetch("http://192.168.0.3/smartActivity/activity_history.php", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: "jasiu1047"
+      })
+    })
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState(
+          {
+            isLoading: false,
+            dataSource: responseJson
+          },
+          function() {}
+        );
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
   render() {
+    if (this.state.isLoading) {
+      return (
+        <LinearGradient
+          colors={["rgba(0,0,0,0.3)", "transparent"]}
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            height: "100%"
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <MaterialIndicator size={60} color="#000000" />
+          </View>
+        </LinearGradient>
+      );
+    }
     return (
       <LinearGradient
         colors={["rgba(0,0,0,0.3)", "transparent"]}
@@ -43,265 +115,114 @@ export default class ActivityHistory extends Component {
           </TouchableOpacity>
           <View style={styles.history_container}>
             <ScrollView>
-              <View style={styles.history_inner_container}>
-                <View style={styles.history_inner_right_container}>
-                  <View style={styles.history_inner_top_container}>
-                    <Icon name="running" style={styles.icon} size={21} />
-                    <Text style={styles.activity_header}>
-                      Enea IronmGdynia 1/2
-                    </Text>
-                  </View>
-                  <View style={styles.history_inner_middle_container}>
-                    <View style={styles.history_inner_bottom_left_container} />
-                    <View style={styles.history_inner_bottom_right_container}>
+              {this.state.dataSource.map(items => (
+                <View style={styles.history_inner_container}>
+                  <View style={styles.history_inner_right_container}>
+                    <View style={styles.history_inner_top_container}>
+                      <Image
+                        source={activityTypesIcon[items.type].icon}
+                        style={styles.activity_image}
+                      />
+                      <Text style={styles.activity_header}>{items.name}</Text>
+                    </View>
+                    <View style={styles.history_inner_middle_container}>
                       <View
-                        style={styles.history_inner_bottom_right_top_container}
-                      >
-                        <Text style={styles.history_inner_label}>Czas</Text>
-                      </View>
-                      <View
-                        style={
-                          styles.history_inner_bottom_right_bottom_container
-                        }
-                      >
+                        style={styles.history_inner_bottom_left_container}
+                      />
+                      <View style={styles.history_inner_bottom_right_container}>
                         <View
                           style={
-                            styles.history_inner_bottom_right_top_bottom_left_container
+                            styles.history_inner_bottom_right_top_container
                           }
                         >
-                          <Text style={styles.history_inner_value}>
-                            02:13.04{" "}
-                            <Text style={styles.history_inner_prefix}>h</Text>
+                          <Text style={styles.history_inner_label}>Czas</Text>
+                        </View>
+                        <View
+                          style={
+                            styles.history_inner_bottom_right_bottom_container
+                          }
+                        >
+                          <View
+                            style={
+                              styles.history_inner_bottom_right_top_bottom_left_container
+                            }
+                          >
+                            <Text style={styles.history_inner_value}>
+                              {items.time}{" "}
+                              <Text style={styles.history_inner_prefix}>h</Text>
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      <View style={styles.activity_history_distance_container}>
+                        <View
+                          style={
+                            styles.history_inner_bottom_right_top_container
+                          }
+                        >
+                          <Text style={styles.history_inner_label}>
+                            Dystans
                           </Text>
+                        </View>
+                        <View
+                          style={
+                            styles.history_inner_bottom_right_bottom_container
+                          }
+                        >
+                          <View
+                            style={
+                              styles.history_inner_bottom_right_top_bottom_left_container
+                            }
+                          >
+                            <Text style={styles.history_inner_value}>
+                              {items.distance}{" "}
+                              <Text style={styles.history_inner_prefix}>
+                                Km
+                              </Text>
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      <View style={styles.activity_history_calories_container}>
+                        <View
+                          style={
+                            styles.history_inner_bottom_right_top_container
+                          }
+                        >
+                          <Text style={styles.history_inner_label}>
+                            Kalorie
+                          </Text>
+                        </View>
+                        <View
+                          style={
+                            styles.history_inner_bottom_right_bottom_container
+                          }
+                        >
+                          <View
+                            style={
+                              styles.history_inner_bottom_right_top_bottom_left_container
+                            }
+                          >
+                            <Text style={styles.history_inner_value}>
+                              {items.calories}{" "}
+                              <Text style={styles.history_inner_prefix}>C</Text>
+                            </Text>
+                          </View>
                         </View>
                       </View>
                     </View>
-                    <View style={styles.activity_history_distance_container}>
-                      <View
-                        style={styles.history_inner_bottom_right_top_container}
-                      >
-                        <Text style={styles.history_inner_label}>Dystans</Text>
+                    <TouchableOpacity>
+                      <View style={styles.history_inner_bottom_container}>
+                        <Icon
+                          name="dots-three-horizontal"
+                          style={styles.icon}
+                          size={21}
+                        />
                       </View>
-                      <View
-                        style={
-                          styles.history_inner_bottom_right_bottom_container
-                        }
-                      >
-                        <View
-                          style={
-                            styles.history_inner_bottom_right_top_bottom_left_container
-                          }
-                        >
-                          <Text style={styles.history_inner_value}>
-                            20{" "}
-                            <Text style={styles.history_inner_prefix}>Km</Text>
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                    <View style={styles.activity_history_calories_container}>
-                      <View
-                        style={styles.history_inner_bottom_right_top_container}
-                      >
-                        <Text style={styles.history_inner_label}>Kalorie</Text>
-                      </View>
-                      <View
-                        style={
-                          styles.history_inner_bottom_right_bottom_container
-                        }
-                      >
-                        <View
-                          style={
-                            styles.history_inner_bottom_right_top_bottom_left_container
-                          }
-                        >
-                          <Text style={styles.history_inner_value}>
-                            122{" "}
-                            <Text style={styles.history_inner_prefix}>C</Text>
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.history_inner_bottom_container}>
-                    <Icon2 name="dots-three-horizontal" style={styles.icon} size={21} />
-                  </View>
-                </View>
-              </View>
-              <View style={styles.history_inner_container}>
-                <View style={styles.history_inner_right_container}>
-                  <View style={styles.history_inner_top_container}>
-                    <Icon name="swimmer" style={styles.icon} size={21} />
-                    <Text style={styles.activity_header}>
-                      Aqua Zdrój
-                    </Text>
-                  </View>
-                  <View style={styles.history_inner_middle_container}>
-                    <View style={styles.history_inner_bottom_left_container} />
-                    <View style={styles.history_inner_bottom_right_container}>
-                      <View
-                        style={styles.history_inner_bottom_right_top_container}
-                      >
-                        <Text style={styles.history_inner_label}>Czas</Text>
-                      </View>
-                      <View
-                        style={
-                          styles.history_inner_bottom_right_bottom_container
-                        }
-                      >
-                        <View
-                          style={
-                            styles.history_inner_bottom_right_top_bottom_left_container
-                          }
-                        >
-                          <Text style={styles.history_inner_value}>
-                            01:52.44{" "}
-                            <Text style={styles.history_inner_prefix}>h</Text>
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                    <View style={styles.activity_history_distance_container}>
-                      <View
-                        style={styles.history_inner_bottom_right_top_container}
-                      >
-                        <Text style={styles.history_inner_label}>Dystans</Text>
-                      </View>
-                      <View
-                        style={
-                          styles.history_inner_bottom_right_bottom_container
-                        }
-                      >
-                        <View
-                          style={
-                            styles.history_inner_bottom_right_top_bottom_left_container
-                          }
-                        >
-                          <Text style={styles.history_inner_value}>
-                            11{" "}
-                            <Text style={styles.history_inner_prefix}>Km</Text>
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                    <View style={styles.activity_history_calories_container}>
-                      <View
-                        style={styles.history_inner_bottom_right_top_container}
-                      >
-                        <Text style={styles.history_inner_label}>Kalorie</Text>
-                      </View>
-                      <View
-                        style={
-                          styles.history_inner_bottom_right_bottom_container
-                        }
-                      >
-                        <View
-                          style={
-                            styles.history_inner_bottom_right_top_bottom_left_container
-                          }
-                        >
-                          <Text style={styles.history_inner_value}>
-                            66{" "}
-                            <Text style={styles.history_inner_prefix}>C</Text>
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.history_inner_bottom_container}>
-                    <Icon2 name="dots-three-horizontal" style={styles.icon} size={21} />
+                    </TouchableOpacity>
                   </View>
                 </View>
-              </View>
-              <View style={styles.history_inner_container}>
-                <View style={styles.history_inner_right_container}>
-                  <View style={styles.history_inner_top_container}>
-                    <Icon1 name="bike" style={styles.icon} size={24} />
-                    <Text style={styles.activity_header}>
-                      Świdnica - Mietków
-                    </Text>
-                  </View>
-                  <View style={styles.history_inner_middle_container}>
-                    <View style={styles.history_inner_bottom_left_container} />
-                    <View style={styles.history_inner_bottom_right_container}>
-                      <View
-                        style={styles.history_inner_bottom_right_top_container}
-                      >
-                        <Text style={styles.history_inner_label}>Czas</Text>
-                      </View>
-                      <View
-                        style={
-                          styles.history_inner_bottom_right_bottom_container
-                        }
-                      >
-                        <View
-                          style={
-                            styles.history_inner_bottom_right_top_bottom_left_container
-                          }
-                        >
-                          <Text style={styles.history_inner_value}>
-                            00:52.44{" "}
-                            <Text style={styles.history_inner_prefix}>h</Text>
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                    <View style={styles.activity_history_distance_container}>
-                      <View
-                        style={styles.history_inner_bottom_right_top_container}
-                      >
-                        <Text style={styles.history_inner_label}>Dystans</Text>
-                      </View>
-                      <View
-                        style={
-                          styles.history_inner_bottom_right_bottom_container
-                        }
-                      >
-                        <View
-                          style={
-                            styles.history_inner_bottom_right_top_bottom_left_container
-                          }
-                        >
-                          <Text style={styles.history_inner_value}>
-                            4{" "}
-                            <Text style={styles.history_inner_prefix}>Km</Text>
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                    <View style={styles.activity_history_calories_container}>
-                      <View
-                        style={styles.history_inner_bottom_right_top_container}
-                      >
-                        <Text style={styles.history_inner_label}>Kalorie</Text>
-                      </View>
-                      <View
-                        style={
-                          styles.history_inner_bottom_right_bottom_container
-                        }
-                      >
-                        <View
-                          style={
-                            styles.history_inner_bottom_right_top_bottom_left_container
-                          }
-                        >
-                          <Text style={styles.history_inner_value}>
-                            22{" "}
-                            <Text style={styles.history_inner_prefix}>C</Text>
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.history_inner_bottom_container}>
-                    <Icon2 name="dots-three-horizontal" style={styles.icon} size={21} />
-                  </View>
-                </View>
-              </View>
-              <View style={styles.history_inner_container} />
-              <View style={styles.history_inner_container} />
-              <View style={styles.history_inner_container} />
-              <View style={styles.history_inner_container} />
+              ))}
             </ScrollView>
           </View>
         </View>
@@ -345,14 +266,14 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "21%",
     paddingHorizontal: "-3%",
-    flexDirection: 'row'
+    flexDirection: "row"
   },
   history_inner_bottom_container: {
     width: "100%",
     height: "20%",
     alignItems: "center",
     justifyContent: "center",
-    flexDirection: "column",
+    flexDirection: "column"
   },
   history_inner_middle_container: {
     width: "100%",
@@ -372,7 +293,7 @@ const styles = StyleSheet.create({
     height: "70%",
     alignItems: "center",
     justifyContent: "center",
-    flexDirection: "column",
+    flexDirection: "column"
   },
   history_inner_bottom_right_top_container: {
     width: "100%",
@@ -383,12 +304,12 @@ const styles = StyleSheet.create({
   history_inner_bottom_right_bottom_container: {
     width: "100%",
     height: "60%",
-    flexDirection: "row",
+    flexDirection: "row"
   },
   history_inner_bottom_right_top_bottom_left_container: {
     width: "100%",
     height: "100%",
-    justifyContent: "flex-end",
+    justifyContent: "flex-end"
   },
   history_inner_label: {
     fontFamily: "Quicksand-Light",
@@ -406,18 +327,22 @@ const styles = StyleSheet.create({
     color: "#777777",
     fontSize: 16
   },
+  activity_image: {
+    height: 20,
+    width: 20
+  },
   activity_header: {
     fontFamily: "Quicksand-Bold",
     color: "rgba(0,0,0,0.5)",
     fontSize: 13,
-    marginLeft: 10,
+    marginLeft: 10
   },
   activity_history_distance_container: {
     width: "25%",
     height: "70%",
     alignItems: "center",
     justifyContent: "center",
-    flexDirection: "column",
+    flexDirection: "column"
   },
   activity_history_calories_container: {
     width: "35%",

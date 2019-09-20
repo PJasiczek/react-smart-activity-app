@@ -87,7 +87,7 @@ export default class Home extends Component {
             <TouchableOpacity
               onPress={() => this.props.navigation.navigate("Login")}
               style={{
-                width: 160,
+                width: "40%",
                 backgroundColor: "#000000",
                 borderWidth: 1,
                 borderRadius: 3,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   button_container: {
-    width: 160,
+    width: "40%",
     backgroundColor: "transparent",
     borderColor: "#000000",
     borderWidth: 1,

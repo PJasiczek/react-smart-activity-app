@@ -39,109 +39,14 @@ export default class ActivityMap extends Component {
       show: false,
       latitude: LATITUDE,
       longitude: LONGITUDE,
-      altitude: 0,
-      speed: 0,
-      routeCoordinates: [],
-      distanceTravelled: this.props.navigation.state.params.distance,
-      prevLatLng: {},
-      coordinate: new AnimatedRegion({
-        latitude: LATITUDE,
-        longitude: LONGITUDE,
-        latitudeDelta: 0,
-        longitudeDelta: 0
-      })
+      latitudeDelta: 0,
+      longitudeDelta: 0
     };
   }
 
-  componentWillMount() {
-    const { coordinate } = this.state;
-    RNLocation.configure({
-      distanceFilter: 0, // Meters
-      desiredAccuracy: {
-        ios: "best",
-        android: "balancedPowerAccuracy"
-      },
-      // Android only
-      androidProvider: "auto",
-      interval: 5000, // Milliseconds
-      fastestInterval: 10000, // Milliseconds
-      maxWaitTime: 5000, // Milliseconds
-      // iOS Only
-      activityType: "other",
-      allowsBackgroundLocationUpdates: false,
-      headingFilter: 1, // Degrees
-      headingOrientation: "portrait",
-      pausesLocationUpdatesAutomatically: false,
-      showsBackgroundLocationIndicator: false
-    })
-      .then(() =>
-        RNLocation.requestPermission({
-          ios: "whenInUse",
-          android: {
-            detail: "fine",
-            rationale: {
-              title: "Location permission",
-              message:
-                "Zezwolić aplikacji na dostep do informacji o lokalizacji tego urządzenia",
-              buttonPositive: "Zezwól",
-              buttonNegative: "Odmów"
-            }
-          }
-        })
-      )
-      .then(granted => {
-        if (granted) {
-          this._startUpdatingLocation();
-        }
-      });
-
-    this.locationSubscription = RNLocation.subscribeToLocationUpdates(
-      locations => {
-        const { routeCoordinates, distanceTravelled } = this.state;
-        const { latitude, longitude, altitude, speed } = locations[0];
-        const newCoordinate = {
-          latitude,
-          longitude,
-          altitude,
-          speed
-        };
-        console.log({ newCoordinate });
-
-        coordinate.timing(newCoordinate).start();
-
-        this.setState({
-          latitude: locations[0].latitude,
-          longitude: locations[0].longitude,
-          altitude: locations[0].altitude,
-          speed: locations[0].speed,
-          routeCoordinates: routeCoordinates.concat([newCoordinate]),
-          prevLatLng: newCoordinate
-        });
-      }
-    );
-  }
-
-  _startUpdatingLocation = () => {
-    this.locationSubscription = RNLocation.subscribeToLocationUpdates(
-      locations => {
-        this.setState({ location: locations[0] });
-      }
-    );
-  };
-
-  _stopUpdatingLocation = () => {
-    this.locationSubscription && this.locationSubscription();
-    this.setState({ location: null });
-  };
-
-  calcDistance = newLatLng => {
-    const { prevLatLng } = this.state;
-    return haversine(prevLatLng, newLatLng) || 0;
-  };
-
   getMapRegion = () => ({
-    latitude: this.state.latitude,
-    longitude: this.state.longitude,
+    latitude: global.latitude,
+    longitude: global.longitude,
     latitudeDelta: LATITUDE_DELTA,
     longitudeDelta: LONGITUDE_DELTA
   });
@@ -155,8 +60,6 @@ export default class ActivityMap extends Component {
   };
 
   render() {
-    const { location } = this.state;
-    const { coordinate } = this.state;
     return (
       <View style={styles.container}>
         <MapView
@@ -168,7 +71,7 @@ export default class ActivityMap extends Component {
           region={this.getMapRegion()}
         >
           <Polyline
-            coordinates={this.state.routeCoordinates}
+            coordinates={global.routeCoordinates}
             strokeColor={"rgba(10, 124, 255, 0.95)"}
             lineCap={"round"}
             lineJoin={"round"}
@@ -181,7 +84,7 @@ export default class ActivityMap extends Component {
             ref={marker => {
               this.marker = marker;
             }}
-            coordinate={this.state.coordinate}
+            coordinate={global.coordinate}
           />
         </MapView>
         {this.state.show ? (
@@ -191,25 +94,27 @@ export default class ActivityMap extends Component {
                 <View style={styles.inner_top_top_container} />
                 <View style={styles.inner_top_bottom_container}>
                   <Text style={styles.distance}>
-                    {parseFloat(this.state.distanceTravelled).toFixed(2)}{" "}
+                    {parseFloat(global.distance).toFixed(2)}{" "}
                     <Text style={styles.distance_label}>km</Text>
                   </Text>
                 </View>
               </View>
               <View style={styles.inner_bottom_container}>
                 <View style={styles.inner_top_left_container}>
-                  <Text style={styles.inner_value}>0 min/km</Text>
+                  <Text style={styles.inner_value}>
+                    {parseFloat(global.pace).toFixed(2)} min/km
+                  </Text>
                   <Text style={styles.inner_label}>Śr. tempo</Text>
                 </View>
                 <View style={styles.inner_top_middle_container}>
                   <Text style={styles.inner_value}>
-                    {parseFloat(this.state.speed).toFixed(2)} km/h
+                    {parseFloat(global.speed).toFixed(2)} km/h
                   </Text>
                   <Text style={styles.inner_label}>Prędkość</Text>
                 </View>
                 <View style={styles.inner_top_right_container}>
                   <Text style={styles.inner_value}>
-                    {parseFloat(this.state.altitude).toFixed(2)} m n.p.m.
+                    {parseFloat(global.altitude).toFixed(2)} m n.p.m.
                   </Text>
                   <Text style={styles.inner_label}>Wysokość</Text>
                 </View>

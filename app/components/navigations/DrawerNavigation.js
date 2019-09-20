@@ -11,6 +11,10 @@ import Map from "../Map";
 import Settings from "../Settings";
 import CreateAccount from "../CreateAccount";
 import ModifyProfile from "../ModifyProfile";
+import ActivityParamsCycling from "../ActivityParamsCycling";
+import ActivityParamsSwimming from "../ActivityParamsSwimming";
+import ActivityParamsRunning from "../ActivityParamsRunning";
+import ActivityParamsWalking from "../ActivityParamsWalking";
 
 import DrawerComponent from "./DrawerComponent";
 
@@ -24,7 +28,11 @@ const NavigationStack = createDrawerNavigator(
     Map: { screen: Map },
     Settings: { screen: Settings },
     CreateAccount: { screen: CreateAccount },
-    ModifyProfile: { screen: ModifyProfile }
+    ModifyProfile: { screen: ModifyProfile },
+    ActivityParamsCycling: { screen: ActivityParamsCycling },
+    ActivityParamsSwimming: { screen: ActivityParamsSwimming },
+    ActivityParamsRunning: { screen: ActivityParamsRunning },
+    ActivityParamsWalking: { screen: ActivityParamsWalking }
   },
   {
     contentComponent: DrawerComponent,

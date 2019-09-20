@@ -193,7 +193,7 @@ export default class CreateAccount extends Component {
                 placeholder="Waga (kg)"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
-                onSubmitEditing={() => this.userUserNameInput.focus()}
+                onSubmitEditing={() => this.userHeightInput.focus()}
                 onChangeText={weight => this.setState({ UserWeight: weight })}
                 style={styles.input}
               />
@@ -201,8 +201,9 @@ export default class CreateAccount extends Component {
                 placeholder="Wzrost (cm)"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
-                ref={input => (this.userUserNameInput = input)}
+                onSubmitEditing={() => this.userHeightInput.focus()}
                 onChangeText={height => this.setState({ UserHeight: height })}
+                ref={input => (this.userHeightInput = input)}
                 style={styles.input}
               />
               <TouchableOpacity

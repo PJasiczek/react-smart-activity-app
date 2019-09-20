@@ -36,12 +36,8 @@ export default class Map extends Component {
   constructor() {
     super();
     this.state = {
-      show: false,
       latitude: LATITUDE,
       longitude: LONGITUDE,
-      altitude: 0,
-      speed: 0,
-      routeCoordinates: [],
       prevLatLng: {},
       coordinate: new AnimatedRegion({
         latitude: LATITUDE,
@@ -55,20 +51,18 @@ export default class Map extends Component {
   componentWillMount() {
     const { coordinate } = this.state;
     RNLocation.configure({
-      distanceFilter: 0, // Meters
+      distanceFilter: 0,
       desiredAccuracy: {
         ios: "best",
         android: "balancedPowerAccuracy"
       },
-      // Android only
       androidProvider: "auto",
-      interval: 5000, // Milliseconds
-      fastestInterval: 10000, // Milliseconds
-      maxWaitTime: 5000, // Milliseconds
-      // iOS Only
+      interval: 5000,
+      fastestInterval: 10000,
+      maxWaitTime: 5000,
       activityType: "other",
       allowsBackgroundLocationUpdates: false,
-      headingFilter: 1, // Degrees
+      headingFilter: 1,
       headingOrientation: "portrait",
       pausesLocationUpdatesAutomatically: false,
       showsBackgroundLocationIndicator: false
@@ -96,24 +90,17 @@ export default class Map extends Component {
 
     this.locationSubscription = RNLocation.subscribeToLocationUpdates(
       locations => {
-        const { routeCoordinates, distanceTravelled } = this.state;
-        const { latitude, longitude, altitude, speed } = locations[0];
+        const { latitude, longitud } = locations[0];
         const newCoordinate = {
           latitude,
-          longitude,
-          altitude,
-          speed
+          longitude
         };
         console.log({ newCoordinate });
 
         coordinate.timing(newCoordinate).start();
-
         this.setState({
           latitude: locations[0].latitude,
           longitude: locations[0].longitude,
-          altitude: locations[0].altitude,
-          speed: locations[0].speed,
-          routeCoordinates: routeCoordinates.concat([newCoordinate]),
           prevLatLng: newCoordinate
         });
       }

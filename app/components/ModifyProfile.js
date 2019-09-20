@@ -16,6 +16,17 @@ import {
   Button,
   TextInput
 } from "react-native";
+import {
+  BallIndicator,
+  BarIndicator,
+  DotIndicator,
+  MaterialIndicator,
+  PacmanIndicator,
+  PulseIndicator,
+  SkypeIndicator,
+  UIActivityIndicator,
+  WaveIndicator
+} from "react-native-indicators";
 import Toast from "@remobile/react-native-toast";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -184,7 +195,7 @@ export default class ModifyProfile extends Component {
               alignItems: "center"
             }}
           >
-            <ActivityIndicator />
+            <MaterialIndicator size={70} color="#000000" />
           </View>
         </LinearGradient>
       );
@@ -229,7 +240,7 @@ export default class ModifyProfile extends Component {
                 placeholder="Nazwa użytkownika"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
-                ref={input => (this.userUserNameInput = input)}
+                onSubmitEditing={() => this.userUserEmailInput.focus()}
                 onChangeText={username =>
                   this.setState({ UserUserName: username })
                 }
@@ -241,9 +252,10 @@ export default class ModifyProfile extends Component {
                 placeholder="E-mail"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
-                ref={input => (this.userUserNameInput = input)}
+                onSubmitEditing={() => this.userOldPasswordInput.focus()}
                 onChangeText={email => this.setState({ UserEmail: email })}
                 value={this.state.UserEmail}
+                ref={input => (this.userUserEmailInput = input)}
                 style={styles.input}
               />
               <Text style={styles.input_header}>Stare hasło</Text>
@@ -252,10 +264,11 @@ export default class ModifyProfile extends Component {
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 secureTextEntry
                 returKeyType="next"
-                ref={input => (this.userUserNameInput = input)}
+                onSubmitEditing={() => this.userNewPasswordInput.focus()}
                 onChangeText={old_password =>
                   this.setState({ UserOldPassword: old_password })
                 }
+                ref={input => (this.userOldPasswordInput = input)}
                 style={styles.input}
               />
               <Text style={styles.input_header}>Nowe hasło</Text>
@@ -264,11 +277,12 @@ export default class ModifyProfile extends Component {
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 secureTextEntry
                 returKeyType="next"
-                ref={input => (this.userUserNameInput = input)}
+                onSubmitEditing={() => this.userWeightInput.focus()}
                 onChangeText={new_password =>
                   this.setState({ UserNewPassword: new_password })
                 }
                 value={this.state.UserNewPassword}
+                ref={input => (this.userNewPasswordInput = input)}
                 style={styles.input}
               />
               <Text style={styles.input_header}>Waga</Text>
@@ -276,9 +290,10 @@ export default class ModifyProfile extends Component {
                 placeholder="Waga (kg)"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
-                onSubmitEditing={() => this.userUserNameInput.focus()}
+                onSubmitEditing={() => this.userHeightInput.focus()}
                 onChangeText={weight => this.setState({ UserWeight: weight })}
                 value={this.state.UserWeight}
+                ref={input => (this.userWeightInput = input)}
                 style={styles.input}
               />
               <Text style={styles.input_header}>Wzrost</Text>
@@ -286,9 +301,10 @@ export default class ModifyProfile extends Component {
                 placeholder="Wzrost (cm)"
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
-                ref={input => (this.userUserNameInput = input)}
+                onSubmitEditing={() => this.userHeightInput.focus()}
                 onChangeText={height => this.setState({ UserHeight: height })}
                 value={this.state.UserHeight}
+                ref={input => (this.userHeightInput = input)}
                 style={styles.input}
               />
               <TouchableOpacity

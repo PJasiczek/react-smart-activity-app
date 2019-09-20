@@ -23,6 +23,14 @@ import {
   UIActivityIndicator,
   WaveIndicator
 } from "react-native-indicators";
+import { Stopwatch, Timer } from "react-native-stopwatch-timer";
+import MapView, {
+  Marker,
+  AnimatedRegion,
+  Polyline,
+  PROVIDER_GOOGLE
+} from "react-native-maps";
+import RNLocation from "react-native-location";
 import { DrawerActions } from "react-navigation";
 import Swiper from "react-native-swiper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -30,7 +38,8 @@ import Icon1 from "react-native-vector-icons/Entypo";
 import { BleManager } from "react-native-ble-plx";
 import { Buffer } from "buffer";
 import Toast from "@remobile/react-native-toast";
-import { Dialog } from 'react-native-simple-dialogs';
+import { Dialog, ConfirmDialog } from "react-native-simple-dialogs";
+import haversine from "haversine";
 import moment from "moment";
 import "moment/locale/pl";
 
@@ -41,6 +50,11 @@ var converter = require("hex2dec");
 import WeatherInfo from "./WeatherInfo";
 import ActivityDetails from "./ActivityDetails";
 
+const LATITUDE_DELTA = 0.001;
+const LONGITUDE_DELTA = 0.001;
+const LATITUDE = 0;
+const LONGITUDE = 0;
+
 export default class ActivityInfo extends Component {
   static navigationOptions = {
     header: null
@@ -49,38 +63,57 @@ export default class ActivityInfo extends Component {
   constructor(props) {
     super(props);
     this.manager = new BleManager();
+    global.isActivityVisible = false;
+    global.altitude = 0;
+    global.distance = 0;
+    global.speed = 0;
+    global.pace = 0;
+    global.max_speed = 0;
+    global.max_pace = 0;
+    global.routeCoordinates = [];
+    global.latitude = LATITUDE;
+    global.longitude = LONGITUDE;
+    global.coordinate = new AnimatedRegion({
+      latitude: LATITUDE,
+      longitude: LONGITUDE,
+      latitudeDelta: 0,
+      longitudeDelta: 0
+    });
     this.state = {
-      backgroundImageSource: this.props.navigation.state.params
-        .backgroundImageSource,
-      isRunning: this.props.navigation.state.params.isRunning,
-      activityType: this.props.navigation.state.params.activityType,
-      paceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      heightIncreaseDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      distanceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      speedDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      isLoading: true,
-      iDay: true,
-      dialogVisible: true,
+      isWatchReady: false,
+      confirmDialogVisible: false,
+      isRunning: false,
+      isActivityReady: false,
       timer: null,
-      stoper: "",
+      activityTimer: "3",
       date: "",
+      stoper: "",
       hours: "",
       minutes: "00",
       seconds: "00",
       miliseconds: "00",
+      backgroundImageSource: this.props.navigation.state.params
+        .backgroundImageSource,
+      activityType: this.props.navigation.state.params.activityType,
+      name: this.props.navigation.state.params.name,
       info: "",
-      name: "",
-      serial_number: "",
-      start_distance: "",
-      distance: "",
-      steps: "",
-      start_steps: "",
-      calories: "",
-      start_calories: "",
-      speed: "",
-      pace: "",
-      heart: "",
+      paceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      heightIncreaseDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      heartBeatDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      speedDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      start_distance: 0,
+      limitedDistance: this.props.navigation.state.params.limitedDistance,
+      steps: 0,
+      start_steps: 0,
+      limitedSteps: this.props.navigation.state.params.limitedSteps,
+      calories: 0,
+      start_calories: 0,
+      limitedCalories: this.props.navigation.state.params.limitedCalories,
+      poolLengths: this.props.navigation.state.params.poolLengths,
+      heart: 0,
+      isLoading: true,
       id: 0,
+      iDay: true,
       description: null,
       location: null,
       temperature: 0,
@@ -96,8 +129,30 @@ export default class ActivityInfo extends Component {
       weather_condition_description: null,
       sunset: 0,
       dateTimestamp: 0,
-      error: null
+      error: null,
+      speed: 0,
+      distanceTravelled: 0,
+      prevLatLng: {},
+      stopwatchStart: false,
+      stopwatchReset: false
     };
+    this.toggleStopwatch = this.toggleStopwatch.bind(this);
+    this.resetStopwatch = this.resetStopwatch.bind(this);
+  }
+
+  toggleStopwatch() {
+    this.setState({
+      stopwatchStart: !this.state.stopwatchStart,
+      stopwatchReset: false
+    });
+  }
+
+  resetStopwatch() {
+    this.setState({ stopwatchStart: false, stopwatchReset: true });
+  }
+
+  getFormattedTime(time) {
+    this.currentTime = time;
   }
 
   componentDidMount() {
@@ -107,7 +162,6 @@ export default class ActivityInfo extends Component {
     moment.locale("pl");
 
     this.fetchWeather();
-    this.onButtonStartStop();
 
     that.setState({
       date: now.format("LL"),
@@ -116,6 +170,71 @@ export default class ActivityInfo extends Component {
   }
 
   componentWillMount() {
+    const { coordinate } = this.state;
+    RNLocation.configure({
+      distanceFilter: 0,
+      desiredAccuracy: {
+        ios: "best",
+        android: "balancedPowerAccuracy"
+      },
+      androidProvider: "auto",
+      interval: 5000,
+      fastestInterval: 10000,
+      maxWaitTime: 5000,
+      activityType: "other",
+      allowsBackgroundLocationUpdates: false,
+      headingFilter: 1,
+      headingOrientation: "portrait",
+      pausesLocationUpdatesAutomatically: false,
+      showsBackgroundLocationIndicator: false
+    })
+      .then(() =>
+        RNLocation.requestPermission({
+          ios: "whenInUse",
+          android: {
+            detail: "fine",
+            rationale: {
+              title: "Location permission",
+              message:
+                "Zezwolić aplikacji na dostep do informacji o lokalizacji tego urządzenia",
+              buttonPositive: "Zezwól",
+              buttonNegative: "Odmów"
+            }
+          }
+        })
+      )
+      .then(granted => {
+        if (granted) {
+          this._startUpdatingLocation();
+        }
+      });
+
+    this.locationSubscription = RNLocation.subscribeToLocationUpdates(
+      locations => {
+        const { routeCoordinates, distanceTravelled } = this.state;
+        const { latitude, longitude, altitude, speed } = locations[0];
+        const newCoordinate = {
+          latitude,
+          longitude,
+          altitude,
+          speed
+        };
+        console.log({ newCoordinate });
+
+        global.coordinate.timing(newCoordinate).start();
+        global.routeCoordinates = global.routeCoordinates.concat([
+          newCoordinate
+        ]);
+        global.latitude = locations[0].latitude;
+        global.longitude = locations[0].longitude;
+        global.altitude = locations[0].altitude;
+        this.setState({
+          speed: locations[0].speed,
+          prevLatLng: newCoordinate
+        });
+      }
+    );
+
     if (Platform.OS === "ios") {
       this.manager.onStateChange(state => {
         if (state === "PoweredOn") this.scanAndConnect();
@@ -131,16 +250,16 @@ export default class ActivityInfo extends Component {
 
   updateDistanceArray() {
     this.state.paceDataArray.shift();
-    this.state.paceDataArray.push(this.state.pace);
+    this.state.paceDataArray.push(Number(global.pace));
 
     this.state.heightIncreaseDataArray.shift();
-    this.state.heightIncreaseDataArray.push(this.state.distance);
-
-    this.state.distanceDataArray.shift();
-    this.state.distanceDataArray.push(this.state.distance);
+    this.state.heightIncreaseDataArray.push(Number(global.altitude));
 
     this.state.speedDataArray.shift();
-    this.state.speedDataArray.push(this.state.speed);
+    this.state.speedDataArray.push(Number(global.speed));
+
+    this.state.heartBeatDataArray.shift();
+    this.state.heartBeatDataArray.push(Number(this.state.heart));
   }
 
   info(message) {
@@ -148,7 +267,7 @@ export default class ActivityInfo extends Component {
   }
 
   error(message) {
-    this.setState({ info: "Błąd: " + message });
+    this.setState({ info: message });
   }
 
   scanAndConnect() {
@@ -157,14 +276,20 @@ export default class ActivityInfo extends Component {
       console.log(device);
 
       if (error) {
-        this.error(error.message);
+        if (error.message == "BluetoothLE is unsupported on this device") {
+          this.error("Bluetooth nie jest obsługiwane na tym urządzeniu");
+        } else if (error.message == "BluetoothLE is powered off") {
+          this.error(
+            "Bluetooth jest wyłączony. Jeśli chcesz połączyć sie z Smartwatchem włącz go!"
+          );
+        } else {
+          this.error(error.message);
+        }
         return;
       }
 
       if (device.name === "Mi Smart Band 4") {
-        this.info("Połączono z Mi Smart Band 4");
-        Toast.showShortBottom(device.name);
-        Toast.showShortBottom(device.id);
+        this.info("Połączono z " + device.name + "(" + device.id + ")");
         this.manager.stopDeviceScan();
         device
           .connect()
@@ -252,9 +377,10 @@ export default class ActivityInfo extends Component {
     this.setState({
       start_steps: steps,
       start_distance: distances,
-      start_calories: calories
+      start_calories: calories,
+      isActivityReady: true
     });
-    this.updateDistanceArray();
+    this.startActivityTimer();
   }
 
   async readCharacteristics(device) {
@@ -315,22 +441,47 @@ export default class ActivityInfo extends Component {
       parseInt(distance_divided) * 256 + parseInt(distance_modulo);
     var calories = converter.hexToDec(returnedDistanceValue.substring(18, 20));
 
+    const serviceHeart = "0000180d-0000-1000-8000-00805f9b34fb";
+    const characteristicWHeart = "00002a39-0000-1000-8000-00805f9b34fb";
+    const characteristicNHeart = "00002a37-0000-1000-8000-00805f9b34fb";
+
+    device.monitorCharacteristicForService(
+      serviceHeart,
+      characteristicNHeart,
+      (error, characteristicHeart) => {
+        if (error) {
+          this.error(error.message);
+          Alert.alert(error.message);
+          return;
+        }
+        const returnedHeartBeatValue = Buffer.from(
+          characteristicHeart.value,
+          "base64"
+        ).toString("hex");
+
+        var heart_beat = converter.hexToDec(returnedHeartBeatValue);
+        this.setState({ heart: heart_beat });
+      }
+    );
+
+    global.distance = (distances - this.state.start_distance) / 1000;
+    global.pace =
+      global.distance == 0
+        ? 0
+        : parseFloat(
+            (Number(this.state.stoper) * 60) / global.distance
+          ).toFixed(2);
+    global.speed =
+      global.distance == 0
+        ? 0
+        : parseFloat(global.distance / Number(this.state.stoper)).toFixed(2);
+    global.max_pace =
+      global.max_pace < global.pace ? global.pace : global.max_pace;
+    global.max_speed =
+      global.max_speed < global.speed ? global.speed : global.max_speed;
     this.setState({
-      name: returnedValue,
-      heart: returnedDistanceValue,
       steps: steps - this.state.start_steps,
-      distance: (distances - this.state.start_distance) / 1000,
-      calories: calories - this.state.start_calories,
-      pace:
-        this.state.distance == ""
-          ? 0
-          : parseFloat((this.state.stoper * 60) / this.state.distance).toFixed(
-              2
-            ),
-      speed:
-        this.state.distance == ""
-          ? 0
-          : parseFloat(this.state.distance / this.state.stoper).toFixed(2)
+      calories: calories - this.state.start_calories
     });
     this.updateDistanceArray();
   }
@@ -338,7 +489,11 @@ export default class ActivityInfo extends Component {
   fetchWeather() {
     setInterval(() => {
       return fetch(
-        "http://api.openweathermap.org/data/2.5/weather?lat=50.84&lon=16.48&APPID=400aef15a46a6becc3a52d55015b6d7b&units=metric"
+        "http://api.openweathermap.org/data/2.5/weather?lat=" +
+          global.latitude +
+          "&lon=" +
+          global.longitude +
+          "&APPID=400aef15a46a6becc3a52d55015b6d7b&units=metric"
       )
         .then(response => response.json())
         .then(responseJson => {
@@ -349,7 +504,6 @@ export default class ActivityInfo extends Component {
               weather_condition: responseJson.weather[0].main,
               weather_condition_description:
                 responseJson.weather[0].description,
-              location: responseJson.name,
               temperature: responseJson.main.temp,
               temp_min: responseJson.main.temp_min,
               temp_max: responseJson.main.temp_max,
@@ -374,51 +528,25 @@ export default class ActivityInfo extends Component {
     }, 5000);
   }
 
-  onButtonStartStop = () => {
-    if (this.state.isRunning) {
-      let timer = setInterval(() => {
-        var milisecondsCount = (Number(this.state.miliseconds) + 1).toString(),
-          secondsCount = this.state.seconds;
-        minutesCount = this.state.minutes;
-        hoursCount = this.state.hours;
-
-        if (Number(this.state.miliseconds) == 9) {
-          secondsCount = (Number(this.state.seconds) + 1).toString();
-          milisecondsCount = "0";
-        }
-
-        if (Number(this.state.seconds) == 59) {
-          minutesCount = (Number(this.state.minutes) + 1).toString();
-          secondsCount = "0";
-        }
-
-        if (Number(this.state.minutes) == 59) {
-          hoursCount = (Number(this.state.hours) + 1).toString();
-          minutesCount = "0";
-        }
+  startActivityTimer = () => {
+    if (this.state.isWatchReady == false) {
+      setInterval(() => {
+        var activityTimerCount = (
+          Number(this.state.activityTimer) - 1
+        ).toString();
 
         this.setState({
-          hours: hoursCount.length == 1 ? "0" + hoursCount : hoursCount,
-          minutes: minutesCount.length == 1 ? "0" + minutesCount : minutesCount,
-          seconds: secondsCount.length == 1 ? "0" + secondsCount : secondsCount,
-          miliseconds:
-            milisecondsCount.length == 1
-              ? "0" + milisecondsCount
-              : milisecondsCount,
-          stoper: (
-            (Number(this.state.seconds) +
-              Number(this.state.minutes) * 60 +
-              Number(this.state.hours) * 3600) /
-            3600
-          ).toString()
+          activityTimer: activityTimerCount
         });
-      }, 100);
-      this.setState({ timer });
-
-      this.setState({ isRunning: false });
-    } else {
-      clearInterval(this.state.timer);
-      this.setState({ isRunning: true });
+        if (Number(this.state.activityTimer) == 0) {
+          this.setState({
+            isWatchReady: true,
+            stopwatchStart: true
+          });
+          this.toggleTimer();
+        }
+        global.isActivityVisible = true;
+      }, 1000);
     }
   };
 
@@ -431,20 +559,122 @@ export default class ActivityInfo extends Component {
       },
       body: JSON.stringify({
         username: "jasiu1047",
+        name: this.state.name,
         type: this.state.activityType,
+        time:
+          String(this.state.hours) +
+          ":" +
+          String(this.state.minutes) +
+          "." +
+          String(this.state.seconds),
         date: this.state.date,
-        distance: this.state.distance,
-        steps: this.state.step,
+        distance: global.distance,
+        steps: this.state.steps,
         calories: this.state.calories
       })
     })
       .then(response => response.json())
       .then(responseJson => {
         Toast.showShortBottom(responseJson);
+        this.props.navigation.navigate("ActivityHistory");
+        this.clearActivityDetailsComponent();
       })
       .catch(error => {
         console.error(error);
       });
+  };
+
+  _startUpdatingLocation = () => {
+    this.locationSubscription = RNLocation.subscribeToLocationUpdates(
+      locations => {
+        this.setState({ location: locations[0] });
+      }
+    );
+  };
+
+  _stopUpdatingLocation = () => {
+    this.locationSubscription && this.locationSubscription();
+    this.setState({ location: null });
+  };
+
+  calcDistance = newLatLng => {
+    const { prevLatLng } = this.state;
+    return haversine(prevLatLng, newLatLng) || 0;
+  };
+
+  showDialog = () => {
+    this.setState({ confirmDialogVisible: true });
+    this.toggleStopwatch();
+  };
+
+  clearActivityDetailsComponent = () => {
+    global.isActivityVisible = false;
+    global.altitude = 0;
+    global.distance = 0;
+    global.speed = 0;
+    global.pace = 0;
+    global.routeCoordinates = [];
+    global.latitude = LATITUDE;
+    global.longitude = LONGITUDE;
+    global.coordinate = new AnimatedRegion({
+      latitude: LATITUDE,
+      longitude: LONGITUDE,
+      latitudeDelta: 0,
+      longitudeDelta: 0
+    });
+    this.state = {
+      isWatchReady: false,
+      confirmDialogVisible: false,
+      isRunning: false,
+      isActivityReady: false,
+      timer: null,
+      activityTimer: "3",
+      stoper: "",
+      date: "",
+      hours: "",
+      minutes: "00",
+      seconds: "00",
+      miliseconds: "00",
+      backgroundImageSource: null,
+      activityType: null,
+      name: null,
+      info: "",
+      paceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      heightIncreaseDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      distanceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      speedDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      start_distance: 0,
+      limitedDistance: 0,
+      steps: 0,
+      start_steps: 0,
+      limitedSteps: 0,
+      calories: 0,
+      start_calories: 0,
+      limitedCalories: 0,
+      heart: 0,
+      isLoading: true,
+      id: 0,
+      iDay: true,
+      description: null,
+      location: null,
+      temperature: 0,
+      temp_min: 0,
+      temp_max: 0,
+      wind: 0,
+      visibility: 0,
+      direction: null,
+      cloudy: 0,
+      humidity: 0,
+      pressure: 0,
+      weather_condition: null,
+      weather_condition_description: null,
+      sunset: 0,
+      dateTimestamp: 0,
+      error: null,
+      speed: 0,
+      distanceTravelled: 0,
+      prevLatLng: {}
+    };
   };
 
   render() {
@@ -453,21 +683,22 @@ export default class ActivityInfo extends Component {
     const { info } = this.state;
     const { name } = this.state;
     const { heart } = this.state;
+    const { limitedSteps } = this.state;
     const { steps } = this.state;
-    const { distance } = this.state;
-    const { pace } = this.state;
-    const { speed } = this.state;
+    const { limitedDistance } = this.state;
+    const { limitedCalories } = this.state;
+    const { poolLengths } = this.state;
     const { calories } = this.state;
     const { paceDataArray } = this.state;
     const { heightIncreaseDataArray } = this.state;
-    const { distanceDataArray } = this.state;
     const { speedDataArray } = this.state;
+    const { heartBeatDataArray } = this.state;
+    const { activityType } = this.state;
     const { isLoading } = this.state;
     const { isDay } = this.state;
     const { id } = this.state;
     const { weather_condition } = this.state;
     const { weather_condition_description } = this.state;
-    const { location } = this.state;
     const { temperature } = this.state;
     const { temp_min } = this.state;
     const { temp_max } = this.state;
@@ -477,198 +708,307 @@ export default class ActivityInfo extends Component {
     const { cloudy } = this.state;
     const { humidity } = this.state;
     const { pressure } = this.state;
-
-    if(this.state.dialogVisible) {
+    if (this.state.isWatchReady == false) {
       return (
-        <Dialog
-          visible={this.state.dialogVisible}
-          onTouchOutside={() => this.setState({dialogVisible: false})} >
-          <View style={styles.dialog_container}>
-            <View style={styles.dialog_header_container}>
-              <Text style={styles.dialog_header}>
-                {this.state.info}
-              </Text>
-            </View>
-            <MaterialIndicator size={60} color="#000000" />
-          </View>
-        </Dialog>
-      )
-    }
-    return (
-      <ImageBackground
-        source={this.state.backgroundImageSource}
-        style={{ flex: 1, width: "100%", height: "100%", opacity: 0.9 }}
-      >
-        <Swiper
-          style={styles.wrapper}
-          showsButtons={false}
-          loop={false}
-          activeDotColor="#000000"
+        <ImageBackground
+          source={this.state.backgroundImageSource}
+          style={{ flex: 1, width: "100%", height: "100%", opacity: 0.9 }}
         >
-          <View style={styles.slide1}>
-            <View style={styles.top_container}>
-              <View style={styles.timer}>
-                <Text style={styles.time}>
-                  {this.state.hours} {this.state.minutes}:{this.state.seconds}.
-                  {this.state.miliseconds}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.botton_container}>
-              <TouchableOpacity
-                onPress={this.onButtonStartStop}
-                style={[
-                  styles.start_button,
-                  this.state.isRunning && styles.stop_button
-                ]}
-              >
-                <Text>
-                  {this.state.isRunning ? (
-                    <Icon name="play" color={"rgba(0, 0, 0, 1.0)"} size={45} />
+          <Dialog
+            visible={this.state.isWatchReady == false ? true : false}
+            onTouchOutside={() => this.setState({ isWatchReady: true })}
+            dialogStyle={{ borderRadius: 20, overflow: "hidden" }}
+          >
+            <View style={styles.dialog_container}>
+              <View style={styles.dialog_header_container}>
+                <Text style={styles.dialog_header}>{this.state.info}</Text>
+                <View style={styles.dialog_indicator_container}>
+                  {this.state.isActivityReady == false ? (
+                    <MaterialIndicator size={60} color="#000000" />
                   ) : (
-                    <Icon name="pause" color={"rgba(0, 0, 0, 0.1)"} size={45} />
+                    <View style={styles.activity_timer_container}>
+                      <Text style={styles.timer_header}>
+                        {this.state.activityTimer}
+                      </Text>
+                    </View>
                   )}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() =>
-                  navigate("ActivityMap", {
-                    distance: this.state.distance
-                  })
-                }
-                style={{
-                  width: 300,
-                  backgroundColor: "transparent",
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  borderBottomColor: "rgba(0, 0, 0, 0.3)",
-                  borderBottomWidth: 0.5,
-                  marginLeft: 5,
-                  marginRight: 5,
-                  paddingVertical: 10,
-                  paddingHorizontal: 10,
-                  marginTop: 0
-                }}
-              >
-                <Icon1 name="location" color={"rgba(0, 0, 0, 0.6)"} size={14} />
-                <Text
-                  style={{
-                    fontFamily: "Quicksand-Light",
-                    fontSize: 14,
-                    color: "rgba(0, 0, 0, 0.6)",
-                    marginLeft: 5
-                  }}
-                >
-                  {" "}
-                  Pokaż na mapie
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={this.publishDataActivity}
-                style={{
-                  width: 300,
-                  backgroundColor: "transparent",
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  borderBottomColor: "rgba(0, 0, 0, 0.3)",
-                  borderBottomWidth: 0.5,
-                  marginLeft: 5,
-                  marginRight: 5,
-                  paddingVertical: 10,
-                  paddingHorizontal: 10,
-                  marginTop: 0
-                }}
-              >
-                <Icon name="close" color={"rgba(0, 0, 0, 0.6)"} size={14} />
-                <Text
-                  style={{
-                    fontFamily: "Quicksand-Light",
-                    fontSize: 14,
-                    color: "rgba(0, 0, 0, 0.6)",
-                    marginLeft: 5
-                  }}
-                >
-                  {" "}
-                  Zakończ trening
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.slide2}>
-            <View style={styles.activity_top_container}>
-              <View style={styles.date_container}>
-                <Text style={styles.activity_date}>{this.state.date}</Text>
-              </View>
-              <View style={styles.icon_container}>
-                <TouchableOpacity
-                  onPress={() => this.props.navigation.navigate("Profile")}
-                  style={styles.profile_action_container}
-                >
-                  <Image
-                    style={styles.icon}
-                    source={require("../../assets/images/profil_icon.png")}
-                  />
-                </TouchableOpacity>
+                </View>
               </View>
             </View>
-            <View style={styles.activity_bottom_container}>
-              <ActivityDetails
-                stoper={stoper}
-                info={info}
-                steps={steps}
-                distance={distance}
-                pace={pace}
-                speed={speed}
-                calories={calories}
-                paceDataArray={paceDataArray}
-                heightIncreaseDataArray={heightIncreaseDataArray}
-                distanceDataArray={distanceDataArray}
-                speedDataArray={speedDataArray}
-              />
-            </View>
-          </View>
-          <View style={styles.slide3}>
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <MaterialIndicator size={70} color="#000000" />
-              </View>
-            ) : (
-              <WeatherInfo
-                id={id}
-                weather_condition={weather_condition}
-                weather_condition_description={weather_condition_description}
-                temperature={temperature}
-                temp_min={temp_min}
-                temp_max={temp_max}
-                location={location}
-                wind={wind}
-                visibility={visibility}
-                direction={direction}
-                cloudy={cloudy}
-                humidity={humidity}
-                pressure={pressure}
-                isDay={isDay}
-              />
-            )}
-          </View>
-        </Swiper>
-        <TouchableOpacity
-          onPress={() =>
-            this.props.navigation.dispatch(DrawerActions.openDrawer())
-          }
-          style={styles.menu_open}
+          </Dialog>
+        </ImageBackground>
+      );
+    } else {
+      return (
+        <ImageBackground
+          source={this.state.backgroundImageSource}
+          style={{ flex: 1, width: "100%", height: "100%", opacity: 0.9 }}
         >
-          <Image
-            style={styles.menu_button}
-            source={require("../../assets/images/icons/menu.png")}
-          />
-        </TouchableOpacity>
-      </ImageBackground>
-    );
+          <Swiper
+            style={styles.wrapper}
+            showsButtons={false}
+            loop={false}
+            activeDotColor="#000000"
+          >
+            <View style={styles.slide1}>
+              <View style={styles.top_container}>
+                <View style={styles.timer}>
+                  <Stopwatch
+                    laps
+                    msecs
+                    start={this.state.stopwatchStart}
+                    reset={this.state.stopwatchReset}
+                    options={options}
+                    getTime={this.getFormattedTime}
+                  />
+                </View>
+              </View>
+              <View style={styles.botton_container}>
+                <TouchableOpacity
+                  onPress={this.toggleStopwatch}
+                  style={[
+                    styles.start_button,
+                    this.state.stopwatchStart && styles.stop_button
+                  ]}
+                >
+                  <Text>
+                    {!this.state.stopwatchStart ? (
+                      <Icon
+                        name="play"
+                        color={"rgba(0, 0, 0, 1.0)"}
+                        size={45}
+                      />
+                    ) : (
+                      <Icon
+                        name="pause"
+                        color={"rgba(0, 0, 0, 1.0)"}
+                        size={45}
+                      />
+                    )}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => this.props.navigation.navigate("ActivityMap")}
+                  style={{
+                    width: 300,
+                    backgroundColor: "transparent",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    borderBottomColor: "rgba(0, 0, 0, 0.3)",
+                    borderBottomWidth: 0.5,
+                    marginLeft: 5,
+                    marginRight: 5,
+                    paddingVertical: 10,
+                    paddingHorizontal: 10,
+                    marginTop: 0
+                  }}
+                >
+                  <Icon1
+                    name="location"
+                    color={"rgba(0, 0, 0, 0.6)"}
+                    size={14}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: "Quicksand-Light",
+                      fontSize: 14,
+                      color: "rgba(0, 0, 0, 0.6)",
+                      marginLeft: 5
+                    }}
+                  >
+                    {" "}
+                    Pokaż na mapie
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => this.showDialog()}
+                  style={{
+                    width: 300,
+                    backgroundColor: "transparent",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    borderBottomColor: "rgba(0, 0, 0, 0.3)",
+                    borderBottomWidth: 0.5,
+                    marginLeft: 5,
+                    marginRight: 5,
+                    paddingVertical: 10,
+                    paddingHorizontal: 10,
+                    marginTop: 0
+                  }}
+                >
+                  <Icon name="close" color={"rgba(0, 0, 0, 0.6)"} size={14} />
+                  <Text
+                    style={{
+                      fontFamily: "Quicksand-Light",
+                      fontSize: 14,
+                      color: "rgba(0, 0, 0, 0.6)",
+                      marginLeft: 5
+                    }}
+                  >
+                    {" "}
+                    Zakończ trening
+                  </Text>
+                </TouchableOpacity>
+                {this.state.confirmDialogVisible == true ? (
+                  <ConfirmDialog
+                    message="Czy na pewno chcesz zakończyć trening?"
+                    visible={this.state.confirmDialogVisible}
+                    onTouchOutside={() =>
+                      this.setState({ confirmDialogVisible: false })
+                    }
+                    dialogStyle={{ borderRadius: 20, overflow: "hidden" }}
+                    messageStyle={{
+                      fontFamily: "Quicksand-Light",
+                      fontSize: 15,
+                      color: "rgba(0,0,0,0.7)",
+                      textAlign: "center"
+                    }}
+                    positiveButton={{
+                      title: "Tak",
+                      onPress: () => {
+                        this.publishDataActivity;
+                      },
+                      titleStyle: {
+                        textAlign: "center",
+                        fontFamily: "Quicksand-Bold",
+                        fontSize: 13,
+                        color: "#ffffff",
+                        fontWeight: "700"
+                      },
+                      style: {
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        backgroundColor: "#000000",
+                        borderWidth: 1,
+                        borderRadius: 3,
+                        marginLeft: 5,
+                        marginRight: 5,
+                        marginBottom: 10
+                      }
+                    }}
+                    negativeButton={{
+                      title: "Nie",
+                      onPress: () =>
+                        this.setState({ confirmDialogVisible: false }),
+                      titleStyle: {
+                        textAlign: "center",
+                        fontFamily: "Quicksand-Bold",
+                        fontSize: 13,
+                        color: "#000000",
+                        fontWeight: "700"
+                      },
+                      style: {
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        backgroundColor: "transparent",
+                        borderColor: "#000000",
+                        borderWidth: 1,
+                        borderRadius: 3,
+                        marginLeft: 5,
+                        marginRight: 5,
+                        marginBottom: 10
+                      }
+                    }}
+                  />
+                ) : null}
+              </View>
+            </View>
+            <View style={styles.slide2}>
+              <View style={styles.activity_top_container}>
+                <View style={styles.date_container}>
+                  <Text style={styles.activity_date}>{this.state.date}</Text>
+                </View>
+                <View style={styles.icon_container}>
+                  <TouchableOpacity
+                    onPress={() => this.props.navigation.navigate("Profile")}
+                    style={styles.profile_action_container}
+                  >
+                    <Image
+                      style={styles.icon}
+                      source={require("../../assets/images/profil_icon.png")}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.activity_bottom_container}>
+                <ActivityDetails
+                  stoper={stoper}
+                  info={info}
+                  limitedSteps={limitedSteps}
+                  steps={steps}
+                  limitedDistance={limitedDistance}
+                  limitedCalories={limitedCalories}
+                  poolLengths={poolLengths}
+                  calories={calories}
+                  heart={heart}
+                  paceDataArray={paceDataArray}
+                  heightIncreaseDataArray={heightIncreaseDataArray}
+                  speedDataArray={speedDataArray}
+                  heartBeatDataArray={heartBeatDataArray}
+                  activityType={activityType}
+                />
+              </View>
+            </View>
+            <View style={styles.slide3}>
+              {isLoading ? (
+                <View style={styles.loadingContainer}>
+                  <MaterialIndicator size={70} color="#000000" />
+                </View>
+              ) : (
+                <WeatherInfo
+                  id={id}
+                  weather_condition={weather_condition}
+                  weather_condition_description={weather_condition_description}
+                  temperature={temperature}
+                  temp_min={temp_min}
+                  temp_max={temp_max}
+                  wind={wind}
+                  visibility={visibility}
+                  direction={direction}
+                  cloudy={cloudy}
+                  humidity={humidity}
+                  pressure={pressure}
+                  isDay={isDay}
+                />
+              )}
+            </View>
+          </Swiper>
+          <TouchableOpacity
+            onPress={() =>
+              this.props.navigation.dispatch(DrawerActions.openDrawer())
+            }
+            style={styles.menu_open}
+          >
+            <Image
+              style={styles.menu_button}
+              source={require("../../assets/images/icons/menu.png")}
+            />
+          </TouchableOpacity>
+        </ImageBackground>
+      );
+    }
+  }
 }
-}
+
+const options = {
+  container: {
+    backgroundColor: "transparent",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "100%"
+  },
+  text: {
+    textAlign: "center",
+    alignSelf: "center",
+    justifyContent: "center",
+    fontSize: 36
+  }
+};
 
 const styles = StyleSheet.create({
   dialog_container: {
@@ -678,15 +1018,41 @@ const styles = StyleSheet.create({
   },
   dialog_header_container: {
     width: "100%",
-    height: "20%",
+    height: Dimensions.get("window").height * 0.15,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 20
+  },
+  dialog_indicator_container: {
+    width: "100%",
+    height: Dimensions.get("window").height * 0.15,
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center"
+  },
+  activity_timer_container: {
+    width: 60,
+    height: 60,
+    borderRadius: 85,
+    borderColor: "rgba(0,0,0,0.2)",
+    borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  timer_header: {
+    fontFamily: "Quicksand-Light",
+    fontSize: 22,
+    color: "rgba(0,0,0,0.7)",
+    textAlign: "center",
+    fontWeight: "500"
   },
   dialog_header: {
     fontFamily: "Quicksand-Light",
     fontSize: 15,
     color: "rgba(0,0,0,0.7)",
+    textAlign: "center"
   },
   wrapper: {},
   slide1: {

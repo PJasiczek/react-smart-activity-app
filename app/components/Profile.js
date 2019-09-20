@@ -5,11 +5,21 @@ import {
   View,
   Image,
   TouchableOpacity,
-  Dimensions
+  Dimensions,
+  Alert,
+  Picker
 } from "react-native";
+import {
+  LineChart,
+  BarChart,
+  PieChart,
+  ProgressChart,
+  ContributionGraph,
+  StackedBarChart
+} from "react-native-chart-kit";
 import { DrawerActions } from "react-navigation";
-import { ProgressCircle } from "react-native-svg-charts";
 import { ConfirmDialog } from "react-native-simple-dialogs";
+import Swiper from "react-native-swiper";
 import Icon from "react-native-vector-icons/Ionicons";
 import Icon1 from "react-native-vector-icons/MaterialCommunityIcons";
 import LinearGradient from "react-native-linear-gradient";
@@ -18,190 +28,204 @@ import moment from "moment";
 const { width, height } = Dimensions.get("window");
 
 export default class Profile extends Component {
+  constructor() {
+    super();
+    this.state = {
+      pickerChartChoose: ""
+    };
+  }
   render() {
+    const data = [
+      50,
+      10,
+      40,
+      95,
+      -4,
+      -24,
+      85,
+      91,
+      35,
+      53,
+      -53,
+      24,
+      50,
+      -20,
+      -80
+    ];
+    const data1 = {
+      labels: ["Lipiec", "Siepień", "Wrzesień"],
+      datasets: [
+        {
+          data: [20, 45, 28]
+        }
+      ]
+    };
+    const data2 = {
+      labels: ["20", "21", "22", "23", "24"],
+      datasets: [
+        {
+          data: [20, 45, 28, 45, 28]
+        }
+      ]
+    };
     return (
-      <LinearGradient
-        colors={["rgba(0,0,0,0.3)", "transparent"]}
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: 0,
-          height: "100%"
-        }}
-      >
-        <View style={styles.container}>
-          <View style={styles.top_container}>
-            <View style={styles.top_top_container}>
+      <View style={styles.container}>
+        <View style={styles.top_container}>
+          <View style={styles.top_top_container}>
+            <TouchableOpacity
+              onPress={() =>
+                this.props.navigation.dispatch(DrawerActions.openDrawer())
+              }
+              style={styles.menu_open}
+            >
+              <Image
+                style={styles.menu_button}
+                source={require("../../assets/images/icons/menu.png")}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate("Settings")}
+              style={styles.settings_button}
+            >
+              <Image
+                style={styles.iconss}
+                source={require("../../assets/images/icons/settings.png")}
+              />
+            </TouchableOpacity>
+            <View style={styles.icon_container}>
               <TouchableOpacity
-                onPress={() =>
-                  this.props.navigation.dispatch(DrawerActions.openDrawer())
-                }
-                style={styles.menu_open}
+                onPress={() => this.props.navigation.navigate("ModifyProfile")}
+                style={styles.edit_action_container}
               >
                 <Image
-                  style={styles.menu_button}
-                  source={require("../../assets/images/icons/menu.png")}
+                  source={require("../../assets/images/icons/edit_profile.png")}
+                  style={styles.edit_action_image}
                 />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => this.props.navigation.navigate("Settings")}
-                style={styles.settings_button}
-              >
-                <Icon1 name="settings" size={20} color={"#000000"} />
-              </TouchableOpacity>
-              <View style={styles.icon_container}>
-                <TouchableOpacity
-                  onPress={() =>
-                    this.props.navigation.navigate("ModifyProfile")
-                  }
-                  style={styles.edit_action_container}
-                >
-                  <Image
-                    source={require("../../assets/images/icons/edit_profile.png")}
-                    style={styles.edit_action_image}
-                  />
-                </TouchableOpacity>
-                <Image
-                  style={styles.icon}
-                  source={require("../../assets/images/profil_icon.png")}
-                />
-              </View>
+              <Image
+                style={styles.icon}
+                source={require("../../assets/images/profil_icon.png")}
+              />
+            </View>
 
-              <Text style={styles.header}>Piotr Jasiczek</Text>
-              <Text style={styles.pre_header}>Polska</Text>
-            </View>
-            <View style={styles.top_middle_container}>
-              <View style={styles.inner_top_container}>
-                <Text style={styles.inner_top_value}>
-                  <Text
-                    style={{
-                      color: "#000000",
-                      fontFamily: "Quicksand-Bold",
-                      fontSize: 19
-                    }}
-                  >
-                    23
-                  </Text>
-                </Text>
-                <Text style={styles.inner_top_label}>Wiek</Text>
-              </View>
-              <View style={styles.inner_top_container}>
-                <Text style={styles.inner_top_value}>
-                  <Text
-                    style={{
-                      color: "#000000",
-                      fontFamily: "Quicksand-Bold",
-                      fontSize: 19
-                    }}
-                  >
-                    189{" "}
-                  </Text>
-                  cm
-                </Text>
-                <Text style={styles.inner_top_label}>Wzrost</Text>
-              </View>
-              <View style={styles.inner_top_container}>
-                <Text style={styles.inner_top_value}>
-                  <Text
-                    style={{
-                      color: "#000000",
-                      fontFamily: "Quicksand-Bold",
-                      fontSize: 19
-                    }}
-                  >
-                    75{" "}
-                  </Text>
-                  kg
-                </Text>
-                <Text style={styles.inner_top_label}>Waga</Text>
-              </View>
-            </View>
-            <View style={styles.top_bottom_container}>
-              <View style={styles.inner_bottom_container}>
-                <Text style={styles.inner_bottom_value}>98776</Text>
-                <Text style={styles.inner_bottom_label}>Kroków</Text>
-              </View>
-              <View style={styles.inner_bottom_container}>
-                <Text style={styles.inner_bottom_value}>18634</Text>
-                <Text style={styles.inner_bottom_label}>Minut</Text>
-              </View>
-              <View style={styles.inner_bottom_container}>
-                <Text style={styles.inner_bottom_value}>120313</Text>
-                <Text style={styles.inner_bottom_label}>Metrów</Text>
-              </View>
-            </View>
+            <Text style={styles.header}>Piotr Jasiczek</Text>
+            <Text style={styles.pre_header}>Polska</Text>
           </View>
-          <View style={styles.border_bottom} />
-          <View style={styles.bottom_container}>
-            <View style={styles.inner_bottom_top_container}>
-              <Text style={styles.day_activity_header}>
-                Dzisiejsza aktywność
+          <View style={styles.top_middle_container}>
+            <View style={styles.inner_top_container}>
+              <Text style={styles.inner_top_value}>
+                <Text
+                  style={{
+                    color: "#000000",
+                    fontFamily: "Quicksand-Bold",
+                    fontSize: 19
+                  }}
+                >
+                  23
+                </Text>
               </Text>
+              <Text style={styles.inner_top_label}>Wiek</Text>
             </View>
-            <View style={styles.inner_bottom_bottom_container}>
-              <ProgressCircle
-                progress={0.3}
-                progressColor={"rgb(35, 35, 35)"}
-                strokeWidth={6}
-                style={{
-                  position: "absolute",
-                  left: Dimensions.get("window").width * 0.075,
-                  height: Dimensions.get("window").height * 0.3,
-                  width: Dimensions.get("window").width * 0.3,
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  zIndex: 1
-                }}
-              >
-                <View style={styles.progress_circle_container}>
-                  <Text style={styles.steps_label}>Kroki</Text>
-                  <Text style={styles.progress_circle_header}>5000</Text>
-                </View>
-              </ProgressCircle>
-              <ProgressCircle
-                progress={0.7}
-                progressColor={"rgb(35, 35, 35)"}
-                strokeWidth={7}
-                style={{
-                  height: Dimensions.get("window").height * 0.4,
-                  width: Dimensions.get("window").width * 0.4,
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  zIndex: 2
-                }}
-              >
-                <View style={styles.progress_circle_distance_container}>
-                  <Text style={styles.distance_label}>Dystans</Text>
-                  <Text style={styles.progress_circle_header}>1500 m</Text>
-                </View>
-              </ProgressCircle>
-              <ProgressCircle
-                progress={0.6}
-                progressColor={"rgb(35, 35, 35)"}
-                strokeWidth={6}
-                style={{
-                  position: "absolute",
-                  right: Dimensions.get("window").width * 0.075,
-                  height: Dimensions.get("window").height * 0.3,
-                  width: Dimensions.get("window").width * 0.3,
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  zIndex: 1
-                }}
-              >
-                <View style={styles.progress_circle_container}>
-                  <Text style={styles.calories_header}>Kalorie</Text>
-                  <Text style={styles.progress_circle_header}>140 C</Text>
-                </View>
-              </ProgressCircle>
+            <View style={styles.inner_top_container}>
+              <Text style={styles.inner_top_value}>
+                <Text
+                  style={{
+                    color: "#000000",
+                    fontFamily: "Quicksand-Bold",
+                    fontSize: 19
+                  }}
+                >
+                  189{" "}
+                </Text>
+                cm
+              </Text>
+              <Text style={styles.inner_top_label}>Wzrost</Text>
+            </View>
+            <View style={styles.inner_top_container}>
+              <Text style={styles.inner_top_value}>
+                <Text
+                  style={{
+                    color: "#000000",
+                    fontFamily: "Quicksand-Bold",
+                    fontSize: 19
+                  }}
+                >
+                  75{" "}
+                </Text>
+                kg
+              </Text>
+              <Text style={styles.inner_top_label}>Waga</Text>
             </View>
           </View>
         </View>
-      </LinearGradient>
+        <View style={styles.border_bottom} />
+        <View style={styles.bottom_container}>
+          <View style={styles.inner_bottom_top_container}>
+            <Text style={styles.day_activity_header}>Ostatnia aktywność</Text>
+          </View>
+          <Swiper
+            style={styles.wrapper}
+            showsButtons={false}
+            loop={true}
+            activeDotColor="#000000"
+          >
+            <View style={styles.slide1}>
+              <View style={styles.inner_bottom_chart_container}>
+                <View style={styles.inner_bottom_chart_header_container}>
+                  <Text style={styles.chart_header}>5 dni</Text>
+                </View>
+                <BarChart
+                  style={{
+                    marginVertical: 3,
+                    borderRadius: 16
+                  }}
+                  data={data2}
+                  width={Dimensions.get("window").width * 0.7}
+                  height={Dimensions.get("window").height * 0.3}
+                  withHorizontalLabels={true}
+                  chartConfig={{
+                    backgroundColor: "#f2f2f2",
+                    backgroundGradientFrom: "#f2f2f2",
+                    backgroundGradientTo: "#f2f2f2",
+                    decimalPlaces: 2,
+                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    style: {
+                      borderRadius: 16
+                    }
+                  }}
+                />
+              </View>
+            </View>
+            <View style={styles.slide2}>
+              <View style={styles.inner_bottom_chart_container}>
+                <View style={styles.inner_bottom_chart_header_container}>
+                  <Text style={styles.chart_header}>3 miesiące</Text>
+                </View>
+                <BarChart
+                  style={{
+                    marginVertical: 3,
+                    borderRadius: 16
+                  }}
+                  data={data1}
+                  width={Dimensions.get("window").width * 0.7}
+                  height={Dimensions.get("window").height * 0.3}
+                  withHorizontalLabels={true}
+                  chartConfig={{
+                    backgroundColor: "#f2f2f2",
+                    backgroundGradientFrom: "#f2f2f2",
+                    backgroundGradientTo: "#f2f2f2",
+                    decimalPlaces: 2,
+                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    style: {
+                      borderRadius: 16
+                    }
+                  }}
+                />
+              </View>
+            </View>
+          </Swiper>
+        </View>
+      </View>
     );
   }
 }
@@ -211,13 +235,27 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#f2f2f2"
+  },
+  wrapper: {
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").height * 0.5
+  },
+  slide1: {
+    flex: 1,
+    alignItems: "center",
+    backgroundColor: "transparent"
+  },
+  slide2: {
+    flex: 1,
+    alignItems: "center",
     backgroundColor: "transparent"
   },
   top_container: {
     flex: 1,
     position: "relative",
     width: "100%",
-    height: "53%",
+    height: "33%",
     alignItems: "center",
     backgroundColor: "transparent"
   },
@@ -256,7 +294,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     backgroundColor: "transparent",
-    paddingVertical: 20,
+    paddingVertical: 40,
     paddingHorizontal: 20
   },
   top_bottom_container: {
@@ -281,7 +319,7 @@ const styles = StyleSheet.create({
   bottom_container: {
     position: "relative",
     width: "100%",
-    height: "47%",
+    height: "53%",
     backgroundColor: "transparent",
     flexDirection: "column",
     alignItems: "center",
@@ -291,18 +329,21 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "100%",
     height: "8%",
+    marginTop: 20,
     backgroundColor: "transparent",
     flexDirection: "row",
-    paddingHorizontal: 40
+    paddingHorizontal: 40,
+    justifyContent: "space-between"
   },
-  inner_bottom_bottom_container: {
-    position: "relative",
-    width: "100%",
-    height: "74%",
-    backgroundColor: "transparent",
-    flexDirection: "row",
+  inner_bottom_chart_container: {
     alignItems: "center",
     justifyContent: "center"
+  },
+  inner_bottom_chart_header_container: {
+    position: "relative",
+    width: "100%",
+    height: "8%",
+    alignSelf: "flex-start"
   },
   progress_circle_distance_container: {
     justifyContent: "center",
@@ -395,10 +436,15 @@ const styles = StyleSheet.create({
     borderColor: "#ffffff",
     borderWidth: 4
   },
-  day_activity_header: {
+  chart_header: {
     fontFamily: "Quicksand-Light",
-    color: "#000000",
-    fontSize: 14
+    color: "rgba(0,0,0,0.6)",
+    fontSize: 12
+  },
+  day_activity_header: {
+    fontFamily: "Quicksand-Bold",
+    color: "rgba(0,0,0,0.6)",
+    fontSize: 15
   },
   header: {
     marginTop: 10,
@@ -454,5 +500,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "transparent",
     zIndex: 1
+  },
+  iconss: {
+    marginLeft: 15,
+    width: 18,
+    height: 18
   }
 });

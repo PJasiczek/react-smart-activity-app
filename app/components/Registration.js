@@ -15,6 +15,17 @@ import {
   Button,
   TextInput
 } from "react-native";
+import {
+  BallIndicator,
+  BarIndicator,
+  DotIndicator,
+  MaterialIndicator,
+  PacmanIndicator,
+  PulseIndicator,
+  SkypeIndicator,
+  UIActivityIndicator,
+  WaveIndicator
+} from "react-native-indicators";
 import Toast from "@remobile/react-native-toast";
 import LinearGradient from "react-native-linear-gradient";
 import DateTimePicker from "react-native-modal-datetime-picker";
@@ -252,7 +263,7 @@ export default class Registration extends Component {
               alignItems: "center"
             }}
           >
-            <ActivityIndicator />
+            <MaterialIndicator size={70} color="#000000" />
           </View>
         </LinearGradient>
       );
@@ -290,6 +301,7 @@ export default class Registration extends Component {
                     placeholder="Imię"
                     placeholderTextColor="rgba(0,0,0,0.5)"
                     returKeyType="next"
+                    onSubmitEditing={() => this.userLastNameInput.focus()}
                     onChangeText={first_name =>
                       this.setState({ UserFirstName: first_name })
                     }
@@ -314,10 +326,12 @@ export default class Registration extends Component {
                     placeholder="Nazwisko"
                     placeholderTextColor="rgba(0,0,0,0.5)"
                     returKeyType="next"
+                    onSubmitEditing={() => this.userUserNameInput.focus()}
                     onChangeText={last_name =>
                       this.setState({ UserLastName: last_name })
                     }
                     value={this.state.UserLastName}
+                    ref={input => (this.userLastNameInput = input)}
                     style={{
                       height: 40,
                       width: "60%",
@@ -341,6 +355,7 @@ export default class Registration extends Component {
                     placeholder="Imię"
                     placeholderTextColor="rgba(255,0,0,1.0)"
                     returKeyType="next"
+                    onSubmitEditing={() => this.userLastNameInput.focus()}
                     onChangeText={first_name =>
                       this.setState({ UserFirstName: first_name })
                     }
@@ -365,10 +380,12 @@ export default class Registration extends Component {
                     placeholder="Nazwisko"
                     placeholderTextColor="rgba(255,0,0,1.0)"
                     returKeyType="next"
+                    onSubmitEditing={() => this.userUserNameInput.focus()}
                     onChangeText={last_name =>
                       this.setState({ UserLastName: last_name })
                     }
                     value={this.state.UserLastName}
+                    ref={input => (this.userLastNameInput = input)}
                     style={{
                       height: 40,
                       width: "60%",
@@ -415,11 +432,12 @@ export default class Registration extends Component {
                   placeholder="Nazwa użytkownika"
                   placeholderTextColor="rgba(0,0,0,0.5)"
                   returKeyType="next"
-                  onSubmitEditing={() => this.userUserNameInput.focus()}
+                  onSubmitEditing={() => this.userPasswordInput.focus()}
                   onChangeText={username =>
                     this.setState({ UserUserName: username })
                   }
                   value={this.state.UserUserName}
+                  ref={input => (this.userUserNameInput = input)}
                   style={styles.input}
                 />
               ) : (
@@ -427,11 +445,12 @@ export default class Registration extends Component {
                   placeholder="Nazwa użytkownika"
                   placeholderTextColor="rgba(255,0,0,1.0)"
                   returKeyType="next"
-                  onSubmitEditing={() => this.userUserNameInput.focus()}
+                  onSubmitEditing={() => this.userPasswordInput.focus()}
                   onChangeText={username =>
                     this.setState({ UserUserName: username })
                   }
                   value={this.state.UserUserName}
+                  ref={input => (this.userUserNameInput = input)}
                   style={styles.input_error}
                 />
               )}
@@ -455,11 +474,12 @@ export default class Registration extends Component {
                   placeholderTextColor="rgba(0,0,0,0.5)"
                   secureTextEntry
                   returKeyType="next"
-                  ref={input => (this.userUserNameInput = input)}
+                  onSubmitEditing={() => this.userEmailInput.focus()}
                   onChangeText={password =>
                     this.setState({ UserPassword: password })
                   }
                   value={this.state.UserPassword}
+                  ref={input => (this.userPasswordInput = input)}
                   style={styles.input}
                 />
               ) : (
@@ -468,11 +488,12 @@ export default class Registration extends Component {
                   placeholderTextColor="rgba(255,0,0,1.0)"
                   secureTextEntry
                   returKeyType="next"
-                  ref={input => (this.userUserNameInput = input)}
+                  onSubmitEditing={() => this.userEmailInput.focus()}
                   onChangeText={password =>
                     this.setState({ UserPassword: password })
                   }
                   value={this.state.UserPassword}
+                  ref={input => (this.userPasswordInput = input)}
                   style={styles.input_error}
                 />
               )}
@@ -494,20 +515,22 @@ export default class Registration extends Component {
                 <TextInput
                   placeholder="E-mail"
                   placeholderTextColor="rgba(0,0,0,0.5)"
-                  ref={input => (this.userEmailInput = input)}
                   returKeyType="next"
+                  onSubmitEditing={() => this.userPickerValueDayInput.focus()}
                   onChangeText={email => this.setState({ UserEmail: email })}
                   value={this.state.UserEmail}
+                  ref={input => (this.userEmailInput = input)}
                   style={styles.input}
                 />
               ) : (
                 <TextInput
                   placeholder="E-mail"
                   placeholderTextColor="rgba(255,0,0,1.0)"
-                  ref={input => (this.userEmailInput = input)}
                   returKeyType="next"
+                  onSubmitEditing={() => this.userPickerValueDayInput.focus()}
                   onChangeText={email => this.setState({ UserEmail: email })}
                   value={this.state.UserEmail}
+                  ref={input => (this.userEmailInput = input)}
                   style={styles.input_error}
                 />
               )}
@@ -532,10 +555,12 @@ export default class Registration extends Component {
                     placeholder="Dzień"
                     placeholderTextColor="rgba(0,0,0,0.5)"
                     returKeyType="next"
+                    onSubmitEditing={() => this.userPickerValueDayInput.focus()}
                     onChangeText={date_of_birth_day =>
                       this.setState({ PickerValueDay: date_of_birth_day })
                     }
                     value={this.state.PickerValueDay}
+                    ref={input => (this.userPickerValueDayInput = input)}
                     style={{
                       height: 40,
                       width: "20%",
@@ -624,10 +649,12 @@ export default class Registration extends Component {
                     placeholder="Dzień"
                     placeholderTextColor="rgba(255,0,0,1.0)"
                     returKeyType="next"
+                    onSubmitEditing={() => this.userPickerValueDayInput.focus()}
                     onChangeText={date_of_birth_day =>
                       this.setState({ PickerValueDay: date_of_birth_day })
                     }
                     value={this.state.PickerValueDay}
+                    ref={input => (this.userPickerValueDayInput = input)}
                     style={{
                       height: 40,
                       width: "20%",

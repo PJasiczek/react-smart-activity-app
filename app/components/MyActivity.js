@@ -66,7 +66,7 @@ export default class Settings extends Component {
             <Swiper
               style={styles.wrapper}
               showsButtons={false}
-              loop={false}
+              loop={true}
               activeDotColor="#000000"
             >
               <View style={styles.slide1}>
@@ -101,9 +101,7 @@ export default class Settings extends Component {
                       <BoxShadow setting={shadowOptButton}>
                         <TouchableOpacity
                           onPress={() =>
-                            navigate("ActivityInfo", {
-                              isRunning: true,
-                              backgroundImageSource: require("../../assets/images/cycling_background_opacity.jpg"),
+                            navigate("ActivityParamsCycling", {
                               activityType: 1
                             })
                           }
@@ -151,9 +149,7 @@ export default class Settings extends Component {
                       <BoxShadow setting={shadowOptButton}>
                         <TouchableOpacity
                           onPress={() =>
-                            navigate("ActivityInfo", {
-                              isRunning: true,
-                              backgroundImageSource: require("../../assets/images/swim_background_opacity.jpg"),
+                            navigate("ActivityParamsSwimming", {
                               activityType: 2
                             })
                           }
@@ -201,9 +197,7 @@ export default class Settings extends Component {
                       <BoxShadow setting={shadowOptButton}>
                         <TouchableOpacity
                           onPress={() =>
-                            navigate("ActivityInfo", {
-                              isRunning: true,
-                              backgroundImageSource: require("../../assets/images/walk_background_opacity.jpg"),
+                            navigate("ActivityParamsWalking", {
                               activityType: 3
                             })
                           }
@@ -223,7 +217,7 @@ export default class Settings extends Component {
                 <BoxShadow setting={shadowOptInnerContainer}>
                   <View style={styles.inner_container}>
                     <Image
-                      source={require("../../assets/images/run_background_black_1.jpg")}
+                      source={require("../../assets/images/run_background_black.jpg")}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -252,9 +246,7 @@ export default class Settings extends Component {
                       <BoxShadow setting={shadowOptButton}>
                         <TouchableOpacity
                           onPress={() =>
-                            navigate("ActivityInfo", {
-                              isRunning: true,
-                              backgroundImageSource: require("../../assets/images/run_background_opacity_1.jpg"),
+                            navigate("ActivityParamsRunning", {
                               activityType: 4
                             })
                           }
