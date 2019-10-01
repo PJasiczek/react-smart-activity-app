@@ -7,11 +7,10 @@ import { weatherConditions } from "./utils/WeatherConditions";
 
 const WeatherInfo = ({
   id,
-  weather_condition,
-  weather_condition_description,
+  weatherCondition,
   temperature,
-  temp_min,
-  temp_max,
+  tempMin,
+  tempMax,
   wind,
   visibility,
   direction,
@@ -43,9 +42,9 @@ const WeatherInfo = ({
         </View>
         <View style={styles.weather_temperature_container}>
           <View style={styles.weather_max_min_temperature_container}>
-            <Text style={styles.weather_max_temperature}>{temp_max} °C</Text>
+            <Text style={styles.weather_max_temperature}>{tempMax} °C</Text>
             <View style={styles.border_max_min_temperature} />
-            <Text style={styles.weather_min_temperature}>{temp_min} °C</Text>
+            <Text style={styles.weather_min_temperature}>{tempMin} °C</Text>
           </View>
         </View>
       </View>

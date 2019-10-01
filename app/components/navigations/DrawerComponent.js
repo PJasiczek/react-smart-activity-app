@@ -3,8 +3,6 @@ import { NavigationActions } from "react-navigation";
 import { Text, View, StyleSheet, ImageBackground, Image } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Icon1 from "react-native-vector-icons/Entypo";
-import Icon2 from "react-native-vector-icons/FontAwesome5";
-import Icon3 from "react-native-vector-icons/Ionicons";
 
 export default class DrawerComponent extends Component {
   navigateToScreen = route => () => {
@@ -49,7 +47,7 @@ export default class DrawerComponent extends Component {
             ]}
           >
             <Image
-              style={styles.iconss}
+              style={styles.pre_icons}
               source={require("../../../assets/images/icons/profile.png")}
             />
             <Text
@@ -73,7 +71,7 @@ export default class DrawerComponent extends Component {
             ]}
           >
             <Image
-              style={styles.iconss}
+              style={styles.pre_icons}
               source={require("../../../assets/images/icons/stopwatch.png")}
             />
             <Text
@@ -98,7 +96,7 @@ export default class DrawerComponent extends Component {
               ]}
             >
               <Image
-                style={styles.iconss}
+                style={styles.pre_icons}
                 source={require("../../../assets/images/icons/heartbeat.png")}
               />
               <Text
@@ -123,7 +121,7 @@ export default class DrawerComponent extends Component {
             ]}
           >
             <Image
-              style={styles.iconss}
+              style={styles.pre_icons}
               source={require("../../../assets/images/icons/history.png")}
             />
             <Text
@@ -146,7 +144,7 @@ export default class DrawerComponent extends Component {
           >
             <Icon
               name="run"
-              style={styles.iconss_icon}
+              style={styles.pre_icon_map}
               size={21}
               color="#000000"
             />
@@ -169,7 +167,7 @@ export default class DrawerComponent extends Component {
             ]}
           >
             <Image
-              style={styles.iconss}
+              style={styles.pre_icons}
               source={require("../../../assets/images/icons/settings.png")}
             />
             <Text
@@ -225,7 +223,7 @@ const styles = StyleSheet.create({
     width: 70,
     borderRadius: 50,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.4)"
+    borderColor: "rgba(0,0,0,0.6)"
   },
   profile_header: {
     flex: 3,
@@ -237,7 +235,7 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     textAlign: "left",
     fontFamily: "Quicksand-Bold",
-    color: "rgba(0,0,0,0.8)",
+    color: "rgba(0,0,0,0.6)",
     fontSize: 14
   },
   screen_container: {
@@ -253,7 +251,7 @@ const styles = StyleSheet.create({
   },
   text_style: {
     fontFamily: "Quicksand-Bold",
-    color: "rgba(0,0,0,0.8)",
+    color: "rgba(0,0,0,0.5)",
     fontSize: 16,
     marginLeft: 15,
     textAlign: "center",
@@ -268,12 +266,12 @@ const styles = StyleSheet.create({
     color: "rgba(0,0,0,0.8)",
     fontSize: 20
   },
-  iconss: {
+  pre_icons: {
     marginLeft: 15,
     width: 16,
     height: 16
   },
-  iconss_icon: {
+  pre_icon_map: {
     marginLeft: 11
   },
   selected_item: {

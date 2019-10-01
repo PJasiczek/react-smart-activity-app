@@ -56,32 +56,41 @@ export default class Registration extends Component {
     this.state = {
       isLoading: true,
       screenHeight: 0,
-      UserUserName: "",
-      UserPassword: "",
-      UserEmail: "",
-      UserFirstName: "",
-      UserLastName: "",
-      PickerValueCountry: "",
-      PickerValueDay: "",
-      PickerValueMonth: "",
-      PickerValueYear: "",
-      UserCountry: "",
+      userUserName: "",
+      userPassword: "",
+      userEmail: "",
+      userFirstName: "",
+      userLastName: "",
+      pickerValueCountry: "",
+      pickerValueDay: "",
+      pickerValueMonth: "",
+      pickerValueYear: "",
+      userCountry: "",
       value: "M",
-      UserWeight: "",
-      UserHeight: "",
-      UserProfileIcon: "",
-      ErrorFirstName: "",
-      ErrorLastName: "",
-      ErrorUserName: "",
-      ErrorPassword: "",
-      ErrorEmail: "",
-      ErrorDateOfBirth: "",
-      ErrorCountry: "",
-      ErrorSex: ""
+      userWeight: "",
+      userHeight: "",
+      userProfileIcon: "",
+      errorFirstName: "",
+      errorLastName: "",
+      errorUserName: "",
+      errorPassword: "",
+      errorEmail: "",
+      errorDateOfBirth: "",
+      errorCountry: "",
+      errorSex: ""
     };
   }
 
-  UserRegistrationFunction = () => {
+  createPickerYearBirthList = () => {
+    let yearBirthList = [];
+
+    for (let j = 1900; j < moment().year() + 1; j++) {
+      yearBirthList.push(<Picker.Item label={`${j}`} value={`${j}`} />);
+    }
+    return yearBirthList;
+  };
+
+  userRegistrationFunction = () => {
     fetch("http://192.168.0.3/smartActivity/user_registration.php", {
       method: "POST",
       headers: {
@@ -89,22 +98,22 @@ export default class Registration extends Component {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        username: this.state.UserUserName,
-        password: this.state.UserPassword,
-        email: this.state.UserEmail,
-        first_name: this.state.UserFirstName,
-        last_name: this.state.UserLastName,
+        username: this.state.userUserName,
+        password: this.state.userPassword,
+        email: this.state.userEmail,
+        first_name: this.state.userFirstName,
+        last_name: this.state.userLastName,
         date_of_birth:
-          this.state.PickerValueYear +
+          this.state.pickerValueYear +
           "-" +
-          this.state.PickerValueMonth +
+          this.state.pickerValueMonth +
           "-" +
-          this.state.PickerValueDay,
-        country: this.state.UserCountry,
+          this.state.pickerValueDay,
+        country: this.state.userCountry,
         sex: this.state.value,
-        weight: this.state.UserWeight,
-        height: this.state.UserHeight,
-        profile_icon: this.state.UserProfileIcon
+        weight: this.state.userWeight,
+        height: this.state.userHeight,
+        profile_icon: this.state.userProfileIcon
       })
     })
       .then(response => response.json())
@@ -113,92 +122,92 @@ export default class Registration extends Component {
           Toast.showShortBottom(responseJson);
         } else if (responseJson == "Proszę wpisać poprawne imię") {
           this.setState({
-            ErrorFirstName: responseJson,
-            ErrorLastName: this.state.UserLastName,
-            ErrorUserName: this.state.UserUserName,
-            ErrorPassword: this.state.UserPassword,
-            ErrorEmail: this.state.UserEmail,
-            ErrorDateOfBirth: "",
-            ErrorCountry: this.state.UserCountry,
-            ErrorSex: this.state.value
+            errorFirstName: responseJson,
+            errorLastName: this.state.userLastName,
+            errorUserName: this.state.userUserName,
+            errorPassword: this.state.userPassword,
+            errorEmail: this.state.userEmail,
+            errorDateOfBirth: "",
+            errorCountry: this.state.userCountry,
+            errorSex: this.state.value
           });
         } else if (responseJson == "Proszę wpisać poprawne nazwisko") {
           this.setState({
-            ErrorFirstName: this.state.UserFirstName,
-            ErrorLastName: responseJson,
-            ErrorUserName: this.state.UserUserName,
-            ErrorPassword: this.state.UserPassword,
-            ErrorEmail: this.state.UserEmail,
-            ErrorDateOfBirth: "",
-            ErrorCountry: this.state.UserCountry,
-            ErrorSex: this.state.value
+            errorFirstName: this.state.userFirstName,
+            errorLastName: responseJson,
+            errorUserName: this.state.userUserName,
+            errorPassword: this.state.userPassword,
+            errorEmail: this.state.userEmail,
+            errorDateOfBirth: "",
+            errorCountry: this.state.userCountry,
+            errorSex: this.state.value
           });
         } else if (responseJson == "Proszę wpisać poprawną nazwę użytkownika") {
           this.setState({
-            ErrorFirstName: this.state.UserFirstName,
-            ErrorLastName: this.state.UserLastName,
-            ErrorUserName: responseJson,
-            ErrorPassword: this.state.UserPassword,
-            ErrorEmail: this.state.UserEmail,
-            ErrorDateOfBirth: "",
-            ErrorCountry: this.state.UserCountry,
-            ErrorSex: this.state.value
+            errorFirstName: this.state.userFirstName,
+            errorLastName: this.state.userLastName,
+            errorUserName: responseJson,
+            errorPassword: this.state.userPassword,
+            errorEmail: this.state.userEmail,
+            errorDateOfBirth: "",
+            errorCountry: this.state.userCountry,
+            errorSex: this.state.value
           });
         } else if (responseJson == "Proszę wpisać poprawne hasło") {
           this.setState({
-            ErrorFirstName: this.state.UserFirstName,
-            ErrorLastName: this.state.UserLastName,
-            ErrorUserName: this.state.UserUserName,
-            ErrorPassword: responseJson,
-            ErrorEmail: this.state.UserEmail,
-            ErrorDateOfBirth: "",
-            ErrorCountry: this.state.UserCountry,
-            ErrorSex: this.state.value
+            errorFirstName: this.state.userFirstName,
+            errorLastName: this.state.userLastName,
+            errorUserName: this.state.userUserName,
+            errorPassword: responseJson,
+            errorEmail: this.state.userEmail,
+            errorDateOfBirth: "",
+            errorCountry: this.state.userCountry,
+            errorSex: this.state.value
           });
         } else if (
           responseJson == "Proszę wpisać poprawny adres skrzynki pocztowej"
         ) {
           this.setState({
-            ErrorFirstName: this.state.UserFirstName,
-            ErrorLastName: this.state.UserLastName,
-            ErrorUserName: this.state.UserUserName,
-            ErrorPassword: this.state.UserPassword,
-            ErrorEmail: responseJson,
-            ErrorDateOfBirth: "",
-            ErrorCountry: this.state.UserCountry,
-            ErrorSex: this.state.value
+            errorFirstName: this.state.userFirstName,
+            errorLastName: this.state.userLastName,
+            errorUserName: this.state.userUserName,
+            errorPassword: this.state.userPassword,
+            errorEmail: responseJson,
+            errorDateOfBirth: "",
+            errorCountry: this.state.userCountry,
+            errorSex: this.state.value
           });
         } else if (responseJson == "Proszę wpisać poprawną datę urodzenia") {
           this.setState({
-            ErrorFirstName: this.state.UserFirstName,
-            ErrorLastName: this.state.UserLastName,
-            ErrorUserName: this.state.UserUserName,
-            ErrorPassword: this.state.UserPassword,
-            ErrorEmail: this.state.UserEmail,
-            ErrorDateOfBirth: responseJson,
-            ErrorCountry: this.state.UserCountry,
-            ErrorSex: this.state.value
+            errorFirstName: this.state.userFirstName,
+            errorLastName: this.state.userLastName,
+            errorUserName: this.state.userUserName,
+            errorPassword: this.state.userPassword,
+            errorEmail: this.state.userEmail,
+            errorDateOfBirth: responseJson,
+            errorCountry: this.state.userCountry,
+            errorSex: this.state.value
           });
         } else if (
           responseJson == "Proszę wprowadzić poprawny region zamieszkania"
         ) {
           this.setState({
-            ErrorFirstName: this.state.UserFirstName,
-            ErrorLastName: this.state.UserLastName,
-            ErrorUserName: this.state.UserUserName,
-            ErrorPassword: this.state.UserPassword,
-            ErrorEmail: this.state.UserEmail,
-            ErrorDateOfBirth: "",
-            ErrorCountry: responseJson,
-            ErrorSex: this.state.value
+            errorFirstName: this.state.userFirstName,
+            errorLastName: this.state.userLastName,
+            errorUserName: this.state.userUserName,
+            errorPassword: this.state.userPassword,
+            errorEmail: this.state.userEmail,
+            errorDateOfBirth: "",
+            errorCountry: responseJson,
+            errorSex: this.state.value
           });
         } else if (responseJson == "Proszę wybrać płeć") {
           this.setState({
-            ErrorSex: responseJson
+            errorSex: responseJson
           });
         } else if (responseJson == "Nastąpiło poprawne utworzenie konta") {
           this.props.navigation.navigate("CreateAccount", {
-            username: this.state.UserUserName
+            username: this.state.userUserName
           });
         }
       })
@@ -208,7 +217,7 @@ export default class Registration extends Component {
   };
 
   componentDidMount() {
-    return fetch("http://192.168.0.3/smartActivity/country_list.php")
+    return fetch("http://192.168.0.3/smartActivity/countries_pl.json")
       .then(response => response.json())
       .then(responseJson => {
         this.setState(
@@ -223,16 +232,6 @@ export default class Registration extends Component {
         console.error(error);
       });
   }
-
-  GetPickerSelectedItemValue = () => {
-    Alert.alert(
-      this.state.PickerValueYear +
-        "-" +
-        this.state.PickerValueMonth +
-        "-" +
-        this.state.PickerValueDay
-    );
-  };
 
   onContentSizeChange = (contentWidth, contentHeight) => {
     this.setState({ screenHeight: contentHeight });
@@ -294,8 +293,8 @@ export default class Registration extends Component {
               </Text>
             </View>
             <View style={styles.inputs_container}>
-              {this.state.ErrorFirstName != "Proszę wpisać poprawne imię" &&
-              this.state.ErrorLastName != "Proszę wpisać poprawne nazwisko" ? (
+              {this.state.errorFirstName != "Proszę wpisać poprawne imię" &&
+              this.state.errorLastName != "Proszę wpisać poprawne nazwisko" ? (
                 <View style={styles.inputs_inner_container}>
                   <TextInput
                     placeholder="Imię"
@@ -303,9 +302,9 @@ export default class Registration extends Component {
                     returKeyType="next"
                     onSubmitEditing={() => this.userLastNameInput.focus()}
                     onChangeText={first_name =>
-                      this.setState({ UserFirstName: first_name })
+                      this.setState({ userFirstName: first_name })
                     }
-                    value={this.state.UserFirstName}
+                    value={this.state.userFirstName}
                     style={{
                       height: 40,
                       width: "35%",
@@ -328,9 +327,9 @@ export default class Registration extends Component {
                     returKeyType="next"
                     onSubmitEditing={() => this.userUserNameInput.focus()}
                     onChangeText={last_name =>
-                      this.setState({ UserLastName: last_name })
+                      this.setState({ userLastName: last_name })
                     }
-                    value={this.state.UserLastName}
+                    value={this.state.userLastName}
                     ref={input => (this.userLastNameInput = input)}
                     style={{
                       height: 40,
@@ -357,9 +356,9 @@ export default class Registration extends Component {
                     returKeyType="next"
                     onSubmitEditing={() => this.userLastNameInput.focus()}
                     onChangeText={first_name =>
-                      this.setState({ UserFirstName: first_name })
+                      this.setState({ userFirstName: first_name })
                     }
-                    value={this.state.UserFirstName}
+                    value={this.state.userFirstName}
                     style={{
                       height: 40,
                       width: "35%",
@@ -382,9 +381,9 @@ export default class Registration extends Component {
                     returKeyType="next"
                     onSubmitEditing={() => this.userUserNameInput.focus()}
                     onChangeText={last_name =>
-                      this.setState({ UserLastName: last_name })
+                      this.setState({ userLastName: last_name })
                     }
-                    value={this.state.UserLastName}
+                    value={this.state.userLastName}
                     ref={input => (this.userLastNameInput = input)}
                     style={{
                       height: 40,
@@ -409,24 +408,24 @@ export default class Registration extends Component {
                 type="error"
                 padding="none"
                 visible={
-                  this.state.ErrorFirstName == "Proszę wpisać poprawne imię"
+                  this.state.errorFirstName == "Proszę wpisać poprawne imię"
                     ? true
-                    : this.state.ErrorLastName ==
+                    : this.state.errorLastName ==
                       "Proszę wpisać poprawne nazwisko"
                     ? true
                     : false
                 }
                 style={styles.healper_text}
               >
-                {this.state.ErrorFirstName == "Proszę wpisać poprawne imię"
-                  ? this.state.ErrorFirstName
-                  : this.state.ErrorLastName ==
+                {this.state.errorFirstName == "Proszę wpisać poprawne imię"
+                  ? this.state.errorFirstName
+                  : this.state.errorLastName ==
                     "Proszę wpisać poprawne nazwisko"
-                  ? this.state.ErrorLastName
+                  ? this.state.errorLastName
                   : ""}
               </HelperText>
 
-              {this.state.ErrorUserName !=
+              {this.state.errorUserName !=
               "Proszę wpisać poprawną nazwę użytkownika" ? (
                 <TextInput
                   placeholder="Nazwa użytkownika"
@@ -434,9 +433,9 @@ export default class Registration extends Component {
                   returKeyType="next"
                   onSubmitEditing={() => this.userPasswordInput.focus()}
                   onChangeText={username =>
-                    this.setState({ UserUserName: username })
+                    this.setState({ userUserName: username })
                   }
-                  value={this.state.UserUserName}
+                  value={this.state.userUserName}
                   ref={input => (this.userUserNameInput = input)}
                   style={styles.input}
                 />
@@ -447,9 +446,9 @@ export default class Registration extends Component {
                   returKeyType="next"
                   onSubmitEditing={() => this.userPasswordInput.focus()}
                   onChangeText={username =>
-                    this.setState({ UserUserName: username })
+                    this.setState({ userUserName: username })
                   }
-                  value={this.state.UserUserName}
+                  value={this.state.userUserName}
                   ref={input => (this.userUserNameInput = input)}
                   style={styles.input_error}
                 />
@@ -458,17 +457,17 @@ export default class Registration extends Component {
                 type="error"
                 padding="none"
                 visible={
-                  this.state.ErrorUserName == "" ||
-                  this.state.ErrorUserName !=
+                  this.state.errorUserName == "" ||
+                  this.state.errorUserName !=
                     "Proszę wpisać poprawną nazwę użytkownika"
                     ? false
                     : true
                 }
               >
-                {this.state.ErrorUserName}
+                {this.state.errorUserName}
               </HelperText>
 
-              {this.state.ErrorPassword != "Proszę wpisać poprawne hasło" ? (
+              {this.state.errorPassword != "Proszę wpisać poprawne hasło" ? (
                 <TextInput
                   placeholder="Hasło"
                   placeholderTextColor="rgba(0,0,0,0.5)"
@@ -476,9 +475,9 @@ export default class Registration extends Component {
                   returKeyType="next"
                   onSubmitEditing={() => this.userEmailInput.focus()}
                   onChangeText={password =>
-                    this.setState({ UserPassword: password })
+                    this.setState({ userPassword: password })
                   }
-                  value={this.state.UserPassword}
+                  value={this.state.userPassword}
                   ref={input => (this.userPasswordInput = input)}
                   style={styles.input}
                 />
@@ -490,9 +489,9 @@ export default class Registration extends Component {
                   returKeyType="next"
                   onSubmitEditing={() => this.userEmailInput.focus()}
                   onChangeText={password =>
-                    this.setState({ UserPassword: password })
+                    this.setState({ userPassword: password })
                   }
-                  value={this.state.UserPassword}
+                  value={this.state.userPassword}
                   ref={input => (this.userPasswordInput = input)}
                   style={styles.input_error}
                 />
@@ -501,24 +500,24 @@ export default class Registration extends Component {
                 type="error"
                 padding="none"
                 visible={
-                  this.state.ErrorPassword == "" ||
-                  this.state.ErrorPassword != "Proszę wpisać poprawne hasło"
+                  this.state.errorPassword == "" ||
+                  this.state.errorPassword != "Proszę wpisać poprawne hasło"
                     ? false
                     : true
                 }
               >
-                {this.state.ErrorPassword}
+                {this.state.errorPassword}
               </HelperText>
 
-              {this.state.ErrorEmail !=
+              {this.state.errorEmail !=
               "Proszę wpisać poprawny adres skrzynki pocztowej" ? (
                 <TextInput
                   placeholder="E-mail"
                   placeholderTextColor="rgba(0,0,0,0.5)"
                   returKeyType="next"
                   onSubmitEditing={() => this.userPickerValueDayInput.focus()}
-                  onChangeText={email => this.setState({ UserEmail: email })}
-                  value={this.state.UserEmail}
+                  onChangeText={email => this.setState({ userEmail: email })}
+                  value={this.state.userEmail}
                   ref={input => (this.userEmailInput = input)}
                   style={styles.input}
                 />
@@ -528,8 +527,8 @@ export default class Registration extends Component {
                   placeholderTextColor="rgba(255,0,0,1.0)"
                   returKeyType="next"
                   onSubmitEditing={() => this.userPickerValueDayInput.focus()}
-                  onChangeText={email => this.setState({ UserEmail: email })}
-                  value={this.state.UserEmail}
+                  onChangeText={email => this.setState({ userEmail: email })}
+                  value={this.state.userEmail}
                   ref={input => (this.userEmailInput = input)}
                   style={styles.input_error}
                 />
@@ -538,17 +537,17 @@ export default class Registration extends Component {
                 type="error"
                 padding="none"
                 visible={
-                  this.state.ErrorEmail == "" ||
-                  this.state.ErrorEmail !=
+                  this.state.errorEmail == "" ||
+                  this.state.errorEmail !=
                     "Proszę wpisać poprawny adres skrzynki pocztowej"
                     ? false
                     : true
                 }
               >
-                {this.state.ErrorEmail}
+                {this.state.errorEmail}
               </HelperText>
 
-              {this.state.ErrorDateOfBirth !=
+              {this.state.errorDateOfBirth !=
               "Proszę wpisać poprawną datę urodzenia" ? (
                 <View style={styles.inputs_inner_container}>
                   <TextInput
@@ -557,9 +556,9 @@ export default class Registration extends Component {
                     returKeyType="next"
                     onSubmitEditing={() => this.userPickerValueDayInput.focus()}
                     onChangeText={date_of_birth_day =>
-                      this.setState({ PickerValueDay: date_of_birth_day })
+                      this.setState({ pickerValueDay: date_of_birth_day })
                     }
-                    value={this.state.PickerValueDay}
+                    value={this.state.pickerValueDay}
                     ref={input => (this.userPickerValueDayInput = input)}
                     style={{
                       height: 40,
@@ -589,9 +588,9 @@ export default class Registration extends Component {
                   >
                     <Picker
                       placeholderTextColor="rgba(0,0,0,0.5)"
-                      selectedValue={this.state.PickerValueMonth}
+                      selectedValue={this.state.pickerValueMonth}
                       onValueChange={(itemValue, itemIndex) =>
-                        this.setState({ PickerValueMonth: itemValue })
+                        this.setState({ pickerValueMonth: itemValue })
                       }
                       style={styles.input}
                     >
@@ -625,21 +624,13 @@ export default class Registration extends Component {
                     <Picker
                       style={styles.input}
                       placeholderTextColor="rgba(0,0,0,0.5)"
-                      selectedValue={this.state.PickerValueYear}
+                      selectedValue={this.state.pickerValueYear}
                       onValueChange={(itemValue, itemIndex) =>
-                        this.setState({ PickerValueYear: itemValue })
+                        this.setState({ pickerValueYear: itemValue })
                       }
                     >
                       <Picker.Item label="Rok" value="" />
-                      <Picker.Item label="1996" value="1996" />
-                      <Picker.Item label="1997" value="1997" />
-                      <Picker.Item label="1998" value="1998" />
-                      <Picker.Item label="1999" value="1999" />
-                      <Picker.Item label="2000" value="2000" />
-                      <Picker.Item label="2001" value="2001" />
-                      <Picker.Item label="2002" value="2002" />
-                      <Picker.Item label="2003" value="2003" />
-                      <Picker.Item label="2004" value="2004" />
+                      {this.createPickerYearBirthList()}
                     </Picker>
                   </View>
                 </View>
@@ -651,9 +642,9 @@ export default class Registration extends Component {
                     returKeyType="next"
                     onSubmitEditing={() => this.userPickerValueDayInput.focus()}
                     onChangeText={date_of_birth_day =>
-                      this.setState({ PickerValueDay: date_of_birth_day })
+                      this.setState({ pickerValueDay: date_of_birth_day })
                     }
-                    value={this.state.PickerValueDay}
+                    value={this.state.pickerValueDay}
                     ref={input => (this.userPickerValueDayInput = input)}
                     style={{
                       height: 40,
@@ -683,9 +674,9 @@ export default class Registration extends Component {
                   >
                     <Picker
                       placeholderTextColor="rgba(255,0,0,1.0)"
-                      selectedValue={this.state.PickerValueMonth}
+                      selectedValue={this.state.pickerValueMonth}
                       onValueChange={(itemValue, itemIndex) =>
-                        this.setState({ PickerValueMonth: itemValue })
+                        this.setState({ pickerValueMonth: itemValue })
                       }
                       style={styles.input_error}
                     >
@@ -719,21 +710,13 @@ export default class Registration extends Component {
                     <Picker
                       style={styles.input_error}
                       placeholderTextColor="rgba(255,0,0,1.0)"
-                      selectedValue={this.state.PickerValueYear}
+                      selectedValue={this.state.pickerValueYear}
                       onValueChange={(itemValue, itemIndex) =>
-                        this.setState({ PickerValueYear: itemValue })
+                        this.setState({ pickerValueYear: itemValue })
                       }
                     >
                       <Picker.Item label="Rok" value="" />
-                      <Picker.Item label="1996" value="1996" />
-                      <Picker.Item label="1997" value="1997" />
-                      <Picker.Item label="1998" value="1998" />
-                      <Picker.Item label="1999" value="1999" />
-                      <Picker.Item label="2000" value="2000" />
-                      <Picker.Item label="2001" value="2001" />
-                      <Picker.Item label="2002" value="2002" />
-                      <Picker.Item label="2003" value="2003" />
-                      <Picker.Item label="2004" value="2004" />
+                      {this.createPickerYearBirthList()}
                     </Picker>
                   </View>
                 </View>
@@ -742,17 +725,17 @@ export default class Registration extends Component {
                 type="error"
                 padding="none"
                 visible={
-                  this.state.ErrorDateOfBirth == "" ||
-                  this.state.ErrorDateOfBirth !=
+                  this.state.errorDateOfBirth == "" ||
+                  this.state.errorDateOfBirth !=
                     "Proszę wpisać poprawną datę urodzenia"
                     ? false
                     : true
                 }
               >
-                {this.state.ErrorDateOfBirth}
+                {this.state.errorDateOfBirth}
               </HelperText>
 
-              {this.state.ErrorCountry == "" ? (
+              {this.state.errorCountry == "" ? (
                 <View
                   style={{
                     height: 40,
@@ -767,18 +750,18 @@ export default class Registration extends Component {
                   <Picker
                     style={styles.input}
                     placeholderTextColor="rgba(0,0,0,0.5)"
-                    selectedValue={this.state.UserCountry}
+                    selectedValue={this.state.userCountry}
                     onValueChange={(itemValue, itemIndex) =>
-                      this.setState({ UserCountry: itemValue })
+                      this.setState({ userCountry: itemValue })
                     }
                     onChangeText={country =>
-                      this.setState({ UserCountry: country })
+                      this.setState({ userCountry: country })
                     }
                   >
                     {this.state.dataSource.map((item, key) => (
                       <Picker.Item
-                        label={item.country_name}
-                        value={item.country_name}
+                        label={item.name_pl}
+                        value={item.name_pl}
                         key={key}
                       />
                     ))}
@@ -799,12 +782,12 @@ export default class Registration extends Component {
                   <Picker
                     style={styles.input}
                     placeholderTextColor="rgba(255,0,0,1.0)"
-                    selectedValue={this.state.UserCountry}
+                    selectedValue={this.state.userCountry}
                     onValueChange={(itemValue, itemIndex) =>
-                      this.setState({ UserCountry: itemValue })
+                      this.setState({ userCountry: itemValue })
                     }
                     onChangeText={country =>
-                      this.setState({ UserCountry: country })
+                      this.setState({ userCountry: country })
                     }
                   >
                     {this.state.dataSource.map((item, key) => (
@@ -820,9 +803,9 @@ export default class Registration extends Component {
               <HelperText
                 type="error"
                 padding="none"
-                visible={this.state.ErrorCountry == "" ? false : true}
+                visible={this.state.errorCountry == "" ? false : true}
               >
-                {this.state.ErrorCountry}
+                {this.state.errorCountry}
               </HelperText>
               <View style={styles.sex_container_chooser}>
                 <RadioButton.Group
@@ -848,7 +831,7 @@ export default class Registration extends Component {
                 </RadioButton.Group>
               </View>
               <TouchableOpacity
-                onPress={this.UserRegistrationFunction}
+                onPress={this.userRegistrationFunction}
                 style={{
                   backgroundColor: "#000000",
                   borderWidth: 1,

@@ -45,14 +45,14 @@ export default class CreateAccount extends Component {
       isUploading: false,
       screenHeight: 0,
       imageSource: null,
-      UserUserName: this.props.navigation.state.params.username,
-      UserWeight: "",
-      UserHeight: "",
-      UserProfileIcon: ""
+      userUserName: this.props.navigation.state.params.username,
+      userWeight: "",
+      userHeight: "",
+      userProfileIcon: ""
     };
   }
 
-  UserModifyFunction = () => {
+  userModifyFunction = () => {
     fetch("http://192.168.0.3/smartActivity/user_account_modify.php", {
       method: "PUT",
       headers: {
@@ -60,10 +60,10 @@ export default class CreateAccount extends Component {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        username: this.state.UserUserName,
-        weight: this.state.UserWeight,
-        height: this.state.UserHeight,
-        profile_icon: this.state.UserProfileIcon
+        username: this.state.userUserName,
+        weight: this.state.userWeight,
+        height: this.state.userHeight,
+        profile_icon: this.state.userProfileIcon
       })
     })
       .then(response => response.json())
@@ -87,7 +87,7 @@ export default class CreateAccount extends Component {
       } else if (response.error) {
         Alert.alert("Błąd", "Nieoczekiwany błąd ImagePicker");
       } else {
-        this.setState({ UserProfileIcon: response.uri });
+        this.setState({ userProfileIcon: response.uri });
         this.uploadPhoto(response.uri);
       }
     });
@@ -194,7 +194,7 @@ export default class CreateAccount extends Component {
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
                 onSubmitEditing={() => this.userHeightInput.focus()}
-                onChangeText={weight => this.setState({ UserWeight: weight })}
+                onChangeText={weight => this.setState({ userWeight: weight })}
                 style={styles.input}
               />
               <TextInput
@@ -202,12 +202,12 @@ export default class CreateAccount extends Component {
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
                 onSubmitEditing={() => this.userHeightInput.focus()}
-                onChangeText={height => this.setState({ UserHeight: height })}
+                onChangeText={height => this.setState({ userHeight: height })}
                 ref={input => (this.userHeightInput = input)}
                 style={styles.input}
               />
               <TouchableOpacity
-                onPress={this.UserModifyFunction}
+                onPress={this.userModifyFunction}
                 style={{
                   backgroundColor: "#000000",
                   borderWidth: 1,

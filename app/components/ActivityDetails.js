@@ -17,7 +17,6 @@ import * as shape from "d3-shape";
 const { height } = Dimensions.get("window");
 
 const ActivityDetails = ({
-  stoper,
   info,
   heart,
   limitedSteps,
@@ -146,7 +145,7 @@ const ActivityDetails = ({
                   >
                     <View style={styles.progress_circle_container}>
                       <Text style={styles.steps}>
-                        {parseFloat(Number(distance / poolLengths)).toFixed(2)}
+                        {parseFloat(Number(distance / poolLengths)).toFixed(1)}
                       </Text>
                     </View>
                   </ProgressCircle>

@@ -117,7 +117,7 @@ class Settings extends Component {
           </TouchableOpacity>
           <View style={styles.top_container}>
             <Text style={styles.ble_header}>Bluetooth</Text>
-            <View style={styles.enableInfoWrapper}>
+            <View style={styles.enable_info_wrapper}>
               <Switch
                 onValueChange={this.toggleBluetooth}
                 value={isEnabled}
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     alignSelf: "center"
   },
-  enableInfoWrapper: {
+  enable_info_wrapper: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center"

@@ -239,11 +239,12 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent"
   },
   history_container: {
-    marginTop: 120,
+    marginTop: 140,
     width: "100%",
-    height: "95%",
+    height: "100%",
     alignItems: "center",
-    backgroundColor: "transparent"
+    backgroundColor: "transparent",
+    paddingBottom: Dimensions.get("window").height * 0.1
   },
   history_inner_container: {
     width: Dimensions.get("window").width * 0.85,

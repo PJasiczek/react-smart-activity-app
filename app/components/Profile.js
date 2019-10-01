@@ -17,6 +17,17 @@ import {
   ContributionGraph,
   StackedBarChart
 } from "react-native-chart-kit";
+import {
+  BallIndicator,
+  BarIndicator,
+  DotIndicator,
+  MaterialIndicator,
+  PacmanIndicator,
+  PulseIndicator,
+  SkypeIndicator,
+  UIActivityIndicator,
+  WaveIndicator
+} from "react-native-indicators";
 import { DrawerActions } from "react-navigation";
 import { ConfirmDialog } from "react-native-simple-dialogs";
 import Swiper from "react-native-swiper";
@@ -31,40 +42,175 @@ export default class Profile extends Component {
   constructor() {
     super();
     this.state = {
-      pickerChartChoose: ""
+      isLoading: false,
+      userFirstName: "",
+      userLastName: "",
+      userAge: "",
+      userCountry: "",
+      userWeight: "",
+      userHeight: "",
+      userProfileIcon: "",
+      fourDayAgo: 0,
+      threeDayAgo: 0,
+      twoDayAgo: 0,
+      oneDayAgo: 0,
+      thisDay: 0,
+      twoMonthAgo: 0,
+      oneMonthAgo: 0,
+      thisMonth: 0
     };
   }
+
+  getProfileUserData = () => {
+    return fetch("http://192.168.0.3/smartActivity/user_data_values.php", {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: "jasiu1047"
+      })
+    })
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({
+          userFirstName: responseJson[0].first_name,
+          userLastName: responseJson[0].last_name,
+          userAge: responseJson[0].date_of_birth,
+          userCountry: responseJson[0].country,
+          userWeight: responseJson[0].weight,
+          userHeight: responseJson[0].height,
+          userProfileIcon: responseJson[0].profil_icon
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
+
+  getActivityDayInfoToChart = () => {
+    return fetch(
+      "http://192.168.0.3/smartActivity/user_chart_day_activity.php",
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: "jasiu1047"
+        })
+      }
+    )
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({
+          isLoading: true,
+          fourDayAgo: responseJson[0].four_day_ago,
+          threeDayAgo: responseJson[0].three_day_ago,
+          twoDayAgo: responseJson[0].two_day_ago,
+          oneDayAgoo: responseJson[0].one_day_ago,
+          thisDay: responseJson[0].this_day
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
+
+  getActivityMonthInfoToChart = () => {
+    return fetch(
+      "http://192.168.0.3/smartActivity/user_chart_month_activity.php",
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: "jasiu1047"
+        })
+      }
+    )
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({
+          twoMonthAgo: responseJson[0].two_month_ago,
+          oneMonthAgo: responseJson[0].one_month_ago,
+          thisMonth: responseJson[0].this_month
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
+
+  componentDidMount() {
+    this.getProfileUserData();
+    this.getActivityDayInfoToChart();
+    this.getActivityMonthInfoToChart();
+
+    moment.locale("pl");
+
+    this.setState({
+      fourDayAgoLabel: moment()
+        .subtract(4, "days")
+        .format("DD/MM"),
+      threeDayAgoLabel: moment()
+        .subtract(3, "days")
+        .format("DD/MM"),
+      twoDayAgoLabel: moment()
+        .subtract(2, "days")
+        .format("DD/MM"),
+      oneDayAgoLabel: moment()
+        .subtract(1, "days")
+        .format("DD/MM"),
+      thisDayLabel: moment().format("DD/MM"),
+      twoMonthAgoLabel: moment()
+        .subtract(2, "months")
+        .format("MMMM"),
+      oneMonthAgoLabel: moment()
+        .subtract(1, "months")
+        .format("MMMM"),
+      thisMonthLabel: moment().format("MMMM")
+    });
+  }
+
   render() {
-    const data = [
-      50,
-      10,
-      40,
-      95,
-      -4,
-      -24,
-      85,
-      91,
-      35,
-      53,
-      -53,
-      24,
-      50,
-      -20,
-      -80
-    ];
-    const data1 = {
-      labels: ["Lipiec", "Siepień", "Wrzesień"],
+    const monthActivityChartData = {
+      labels: [
+        this.state.twoMonthAgoLabel,
+        this.state.oneMonthAgoLabel,
+        this.state.thisMonthLabel
+      ],
       datasets: [
         {
-          data: [20, 45, 28]
+          data: [
+            this.state.twoMonthAgo,
+            this.state.oneMonthAgo,
+            this.state.thisMonth
+          ]
         }
       ]
     };
-    const data2 = {
-      labels: ["20", "21", "22", "23", "24"],
+    const dayActivityChartData = {
+      labels: [
+        this.state.fourDayAgoLabel,
+        this.state.threeDayAgoLabel,
+        this.state.twoDayAgoLabel,
+        this.state.oneDayAgoLabel,
+        this.state.thisDayLabel
+      ],
       datasets: [
         {
-          data: [20, 45, 28, 45, 28]
+          data: [
+            this.state.fourDayAgo,
+            this.state.threeDayAgo,
+            this.state.twoDayAgo,
+            this.state.oneDayAgo,
+            this.state.thisDay
+          ]
         }
       ]
     };
@@ -163,67 +309,71 @@ export default class Profile extends Component {
           <View style={styles.inner_bottom_top_container}>
             <Text style={styles.day_activity_header}>Ostatnia aktywność</Text>
           </View>
-          <Swiper
-            style={styles.wrapper}
-            showsButtons={false}
-            loop={true}
-            activeDotColor="#000000"
-          >
-            <View style={styles.slide1}>
-              <View style={styles.inner_bottom_chart_container}>
-                <View style={styles.inner_bottom_chart_header_container}>
-                  <Text style={styles.chart_header}>5 dni</Text>
-                </View>
-                <BarChart
-                  style={{
-                    marginVertical: 3,
-                    borderRadius: 16
-                  }}
-                  data={data2}
-                  width={Dimensions.get("window").width * 0.7}
-                  height={Dimensions.get("window").height * 0.3}
-                  withHorizontalLabels={true}
-                  chartConfig={{
-                    backgroundColor: "#f2f2f2",
-                    backgroundGradientFrom: "#f2f2f2",
-                    backgroundGradientTo: "#f2f2f2",
-                    decimalPlaces: 2,
-                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                    style: {
+          {this.state.isLoading ? (
+            <Swiper
+              style={styles.wrapper}
+              showsButtons={false}
+              loop={true}
+              activeDotColor="#000000"
+            >
+              <View style={styles.slide1}>
+                <View style={styles.inner_bottom_chart_container}>
+                  <View style={styles.inner_bottom_chart_header_container}>
+                    <Text style={styles.chart_header}>5 dni</Text>
+                  </View>
+                  <BarChart
+                    style={{
+                      marginVertical: 3,
                       borderRadius: 16
-                    }
-                  }}
-                />
-              </View>
-            </View>
-            <View style={styles.slide2}>
-              <View style={styles.inner_bottom_chart_container}>
-                <View style={styles.inner_bottom_chart_header_container}>
-                  <Text style={styles.chart_header}>3 miesiące</Text>
+                    }}
+                    data={dayActivityChartData}
+                    width={Dimensions.get("window").width * 0.8}
+                    height={Dimensions.get("window").height * 0.3}
+                    withHorizontalLabels={true}
+                    chartConfig={{
+                      backgroundColor: "#f2f2f2",
+                      backgroundGradientFrom: "#f2f2f2",
+                      backgroundGradientTo: "#f2f2f2",
+                      decimalPlaces: 2,
+                      color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                      style: {
+                        borderRadius: 16
+                      }
+                    }}
+                  />
                 </View>
-                <BarChart
-                  style={{
-                    marginVertical: 3,
-                    borderRadius: 16
-                  }}
-                  data={data1}
-                  width={Dimensions.get("window").width * 0.7}
-                  height={Dimensions.get("window").height * 0.3}
-                  withHorizontalLabels={true}
-                  chartConfig={{
-                    backgroundColor: "#f2f2f2",
-                    backgroundGradientFrom: "#f2f2f2",
-                    backgroundGradientTo: "#f2f2f2",
-                    decimalPlaces: 2,
-                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                    style: {
-                      borderRadius: 16
-                    }
-                  }}
-                />
               </View>
-            </View>
-          </Swiper>
+              <View style={styles.slide2}>
+                <View style={styles.inner_bottom_chart_container}>
+                  <View style={styles.inner_bottom_chart_header_container}>
+                    <Text style={styles.chart_header}>3 miesiące</Text>
+                  </View>
+                  <BarChart
+                    style={{
+                      marginVertical: 3,
+                      borderRadius: 16
+                    }}
+                    data={monthActivityChartData}
+                    width={Dimensions.get("window").width * 0.8}
+                    height={Dimensions.get("window").height * 0.3}
+                    withHorizontalLabels={true}
+                    chartConfig={{
+                      backgroundColor: "#f2f2f2",
+                      backgroundGradientFrom: "#f2f2f2",
+                      backgroundGradientTo: "#f2f2f2",
+                      decimalPlaces: 2,
+                      color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                      style: {
+                        borderRadius: 16
+                      }
+                    }}
+                  />
+                </View>
+              </View>
+            </Swiper>
+          ) : (
+            <MaterialIndicator size={60} color="#000000" />
+          )}
         </View>
       </View>
     );
@@ -345,29 +495,6 @@ const styles = StyleSheet.create({
     height: "8%",
     alignSelf: "flex-start"
   },
-  progress_circle_distance_container: {
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 2
-  },
-  progress_circle_container: {
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    zIndex: 2
-  },
-  progress_circle_header: {
-    fontFamily: "Quicksand-Light",
-    color: "#000000",
-    fontSize: 15
-  },
-  bottom_bottom_container: {
-    width: "100%",
-    height: "50%",
-    backgroundColor: "transparent",
-    alignItems: "center"
-  },
   bottom_top_container: {
     position: "relative",
     width: "100%",
@@ -382,15 +509,6 @@ const styles = StyleSheet.create({
   },
   inner_top_container: {
     width: "27%",
-    height: "35%",
-    marginHorizontal: 10,
-    marginVertical: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "transparent"
-  },
-  inner_bottom_container: {
-    width: "20%",
     height: "35%",
     marginHorizontal: 10,
     marginVertical: 5,
@@ -416,17 +534,6 @@ const styles = StyleSheet.create({
     color: "#000000",
     fontFamily: "Quicksand-Light",
     fontSize: 12
-  },
-  inner_bottom_value: {
-    color: "#000000",
-    fontFamily: "Quicksand-Bold",
-    fontSize: 15,
-    paddingVertical: 5
-  },
-  inner_bottom_label: {
-    color: "#000000",
-    fontFamily: "Quicksand-Light",
-    fontSize: 11
   },
   icon: {
     flex: 1,
@@ -456,21 +563,6 @@ const styles = StyleSheet.create({
     fontFamily: "Quicksand-Light",
     color: "#777777",
     fontSize: 13
-  },
-  steps_label: {
-    fontFamily: "Quicksand-Light",
-    color: "#000000",
-    fontSize: 14
-  },
-  distance_label: {
-    fontFamily: "Quicksand-Light",
-    color: "#000000",
-    fontSize: 15
-  },
-  calories_header: {
-    fontFamily: "Quicksand-Light",
-    color: "#000000",
-    fontSize: 14
   },
   menu_button: {
     width: 25,

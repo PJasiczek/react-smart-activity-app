@@ -9,7 +9,6 @@ import CreateAccount from "./app/components/CreateAccount";
 import Map from "./app/components/Map";
 import ModifyProfile from "./app/components/ModifyProfile";
 import UserHome from "./app/components/UserHome";
-import ActivityParams from "./app/components/ActivityParams";
 
 const Navigation = createStackNavigator({
   Home: {
@@ -32,9 +31,6 @@ const Navigation = createStackNavigator({
   },
   UserHome: {
     screen: UserHome
-  },
-  ActivityParams: {
-    screen: ActivityParams
   }
 });
 

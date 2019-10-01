@@ -84,14 +84,10 @@ export default class ActivityInfo extends Component {
       confirmDialogVisible: false,
       isRunning: false,
       isActivityReady: false,
-      timer: null,
       activityTimer: "3",
+      activityDate: "",
       date: "",
       stoper: "",
-      hours: "",
-      minutes: "00",
-      seconds: "00",
-      miliseconds: "00",
       backgroundImageSource: this.props.navigation.state.params
         .backgroundImageSource,
       activityType: this.props.navigation.state.params.activityType,
@@ -111,22 +107,23 @@ export default class ActivityInfo extends Component {
       limitedCalories: this.props.navigation.state.params.limitedCalories,
       poolLengths: this.props.navigation.state.params.poolLengths,
       heart: 0,
+      max_heart_beat: 0,
+      min_heart_beat: 0,
       isLoading: true,
       id: 0,
       iDay: true,
       description: null,
       location: null,
       temperature: 0,
-      temp_min: 0,
-      temp_max: 0,
+      tempMin: 0,
+      tempMax: 0,
       wind: 0,
       visibility: 0,
       direction: null,
       cloudy: 0,
       humidity: 0,
       pressure: 0,
-      weather_condition: null,
-      weather_condition_description: null,
+      weatherCondition: null,
       sunset: 0,
       dateTimestamp: 0,
       error: null,
@@ -153,6 +150,12 @@ export default class ActivityInfo extends Component {
 
   getFormattedTime(time) {
     this.currentTime = time;
+    var crrTime = this.currentTime;
+    var seconds = crrTime.slice(6, 8);
+    var minutes = crrTime.slice(3, 5);
+    var hours = crrTime.slice(0, 2);
+    global.stoper =
+      (Number(seconds) + 60 * Number(minutes)) / 3600 + Number(hours);
   }
 
   componentDidMount() {
@@ -165,6 +168,7 @@ export default class ActivityInfo extends Component {
 
     that.setState({
       date: now.format("LL"),
+      activityDate: now.format("YYYY-MM-DD"),
       dateTimestamp: now.unix()
     });
   }
@@ -242,10 +246,6 @@ export default class ActivityInfo extends Component {
     } else {
       this.scanAndConnect();
     }
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.state.timer);
   }
 
   updateDistanceArray() {
@@ -468,20 +468,26 @@ export default class ActivityInfo extends Component {
     global.pace =
       global.distance == 0
         ? 0
-        : parseFloat(
-            (Number(this.state.stoper) * 60) / global.distance
-          ).toFixed(2);
+        : parseFloat(Number(global.stoper) / global.distance).toFixed(2);
     global.speed =
       global.distance == 0
         ? 0
-        : parseFloat(global.distance / Number(this.state.stoper)).toFixed(2);
+        : parseFloat(global.distance / Number(global.stoper)).toFixed(2);
     global.max_pace =
       global.max_pace < global.pace ? global.pace : global.max_pace;
     global.max_speed =
       global.max_speed < global.speed ? global.speed : global.max_speed;
     this.setState({
       steps: steps - this.state.start_steps,
-      calories: calories - this.state.start_calories
+      calories: calories - this.state.start_calories,
+      max_heart_beat:
+        this.state.max_heart_beat < this.state.heart
+          ? this.state.heart
+          : this.state.max_heart_beat,
+      min_heart_beat:
+        this.state.min_heart_beat > this.state.heart
+          ? this.state.heart
+          : this.state.min_heart_beat
     });
     this.updateDistanceArray();
   }
@@ -501,12 +507,10 @@ export default class ActivityInfo extends Component {
             {
               isLoading: false,
               id: responseJson.weather[0].id,
-              weather_condition: responseJson.weather[0].main,
-              weather_condition_description:
-                responseJson.weather[0].description,
+              weatherCondition: responseJson.weather[0].main,
               temperature: responseJson.main.temp,
-              temp_min: responseJson.main.temp_min,
-              temp_max: responseJson.main.temp_max,
+              tempMin: responseJson.main.temp_min,
+              tempMax: responseJson.main.temp_max,
               wind: responseJson.wind.speed,
               visibility: responseJson.visibility,
               direction: responseJson.wind.deg,
@@ -540,10 +544,9 @@ export default class ActivityInfo extends Component {
         });
         if (Number(this.state.activityTimer) == 0) {
           this.setState({
-            isWatchReady: true,
-            stopwatchStart: true
+            isWatchReady: true
           });
-          this.toggleTimer();
+          this.toggleStopwatch();
         }
         global.isActivityVisible = true;
       }, 1000);
@@ -561,16 +564,15 @@ export default class ActivityInfo extends Component {
         username: "jasiu1047",
         name: this.state.name,
         type: this.state.activityType,
-        time:
-          String(this.state.hours) +
-          ":" +
-          String(this.state.minutes) +
-          "." +
-          String(this.state.seconds),
-        date: this.state.date,
+        time: this.currentTime,
+        date: this.state.activityDate,
         distance: global.distance,
         steps: this.state.steps,
-        calories: this.state.calories
+        calories: this.state.calories,
+        max_pace: global.max_pace,
+        max_speed: global.max_speed,
+        max_heart_beat: global.max_heart_beat,
+        min_heart_beat: global.min_heart_beat
       })
     })
       .then(response => response.json())
@@ -611,8 +613,11 @@ export default class ActivityInfo extends Component {
     global.isActivityVisible = false;
     global.altitude = 0;
     global.distance = 0;
+    global.stoper = "";
     global.speed = 0;
     global.pace = 0;
+    global.max_speed = 0;
+    global.max_pace = 0;
     global.routeCoordinates = [];
     global.latitude = LATITUDE;
     global.longitude = LONGITUDE;
@@ -627,30 +632,26 @@ export default class ActivityInfo extends Component {
       confirmDialogVisible: false,
       isRunning: false,
       isActivityReady: false,
-      timer: null,
       activityTimer: "3",
-      stoper: "",
       date: "",
-      hours: "",
-      minutes: "00",
-      seconds: "00",
-      miliseconds: "00",
-      backgroundImageSource: null,
-      activityType: null,
-      name: null,
+      backgroundImageSource: this.props.navigation.state.params
+        .backgroundImageSource,
+      activityType: this.props.navigation.state.params.activityType,
+      name: this.props.navigation.state.params.name,
       info: "",
       paceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       heightIncreaseDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      distanceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      heartBeatDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       speedDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       start_distance: 0,
-      limitedDistance: 0,
+      limitedDistance: this.props.navigation.state.params.limitedDistance,
       steps: 0,
       start_steps: 0,
-      limitedSteps: 0,
+      limitedSteps: this.props.navigation.state.params.limitedSteps,
       calories: 0,
       start_calories: 0,
-      limitedCalories: 0,
+      limitedCalories: this.props.navigation.state.params.limitedCalories,
+      poolLengths: this.props.navigation.state.params.poolLengths,
       heart: 0,
       isLoading: true,
       id: 0,
@@ -658,28 +659,28 @@ export default class ActivityInfo extends Component {
       description: null,
       location: null,
       temperature: 0,
-      temp_min: 0,
-      temp_max: 0,
+      tempMin: 0,
+      tempMax: 0,
       wind: 0,
       visibility: 0,
       direction: null,
       cloudy: 0,
       humidity: 0,
       pressure: 0,
-      weather_condition: null,
-      weather_condition_description: null,
+      weatherCondition: null,
       sunset: 0,
       dateTimestamp: 0,
       error: null,
       speed: 0,
       distanceTravelled: 0,
-      prevLatLng: {}
+      prevLatLng: {},
+      stopwatchStart: false,
+      stopwatchReset: false
     };
   };
 
   render() {
     const { navigate } = this.props.navigation;
-    const { stoper } = this.state;
     const { info } = this.state;
     const { name } = this.state;
     const { heart } = this.state;
@@ -697,11 +698,10 @@ export default class ActivityInfo extends Component {
     const { isLoading } = this.state;
     const { isDay } = this.state;
     const { id } = this.state;
-    const { weather_condition } = this.state;
-    const { weather_condition_description } = this.state;
+    const { weatherCondition } = this.state;
     const { temperature } = this.state;
-    const { temp_min } = this.state;
-    const { temp_max } = this.state;
+    const { tempMin } = this.state;
+    const { tempMax } = this.state;
     const { wind } = this.state;
     const { visibility } = this.state;
     const { direction } = this.state;
@@ -936,7 +936,6 @@ export default class ActivityInfo extends Component {
               </View>
               <View style={styles.activity_bottom_container}>
                 <ActivityDetails
-                  stoper={stoper}
                   info={info}
                   limitedSteps={limitedSteps}
                   steps={steps}
@@ -961,11 +960,10 @@ export default class ActivityInfo extends Component {
               ) : (
                 <WeatherInfo
                   id={id}
-                  weather_condition={weather_condition}
-                  weather_condition_description={weather_condition_description}
+                  weatherCondition={weatherCondition}
                   temperature={temperature}
-                  temp_min={temp_min}
-                  temp_max={temp_max}
+                  tempMin={tempMin}
+                  tempMax={tempMax}
                   wind={wind}
                   visibility={visibility}
                   direction={direction}

@@ -57,14 +57,14 @@ export default class ModifyProfile extends Component {
       isUploading: false,
       screenHeight: 0,
       imageSource: null,
-      UserUserName: "",
-      UserNewUserName: "",
-      UserOldPassword: "",
-      UserNewPassword: "",
-      UserEmail: "",
-      UserWeight: "",
-      UserHeight: "",
-      UserProfileIcon: ""
+      userUserName: "",
+      userNewUserName: "",
+      userOldPassword: "",
+      userNewPassword: "",
+      userEmail: "",
+      userWeight: "",
+      userHeight: "",
+      userProfileIcon: ""
     };
   }
 
@@ -82,10 +82,10 @@ export default class ModifyProfile extends Component {
       .then(response => response.json())
       .then(responseJson => {
         this.setState({
-          UserOldPassword: responseJson[0].password,
-          UserEmail: responseJson[0].email,
-          UserWeight: responseJson[0].weight,
-          UserHeight: responseJson[0].height,
+          userOldPassword: responseJson[0].password,
+          userEmail: responseJson[0].email,
+          userWeight: responseJson[0].weight,
+          userHeight: responseJson[0].height,
           imageSource: responseJson[0].profile_icon
         });
       })
@@ -94,7 +94,7 @@ export default class ModifyProfile extends Component {
       });
   }
 
-  UserModifyFunction = () => {
+  userModifyFunction = () => {
     fetch("http://192.168.0.3/smartActivity/user_profile_modify.php", {
       method: "PUT",
       headers: {
@@ -102,13 +102,13 @@ export default class ModifyProfile extends Component {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        username: this.state.UserUserName,
-        new_username: this.state.UserNewUserName,
-        email: this.state.UserEmail,
-        new_password: this.state.UserNewPassword,
-        weight: this.state.UserWeight,
-        height: this.state.UserHeight,
-        profile_icon: this.state.UserProfileIcon
+        username: this.state.userUserName,
+        new_username: this.state.userNewUserName,
+        email: this.state.userEmail,
+        new_password: this.state.userNewPassword,
+        weight: this.state.userWeight,
+        height: this.state.userHeight,
+        profile_icon: this.state.userProfileIcon
       })
     })
       .then(response => response.json())
@@ -132,7 +132,7 @@ export default class ModifyProfile extends Component {
       } else if (response.error) {
         Alert.alert("Błąd", "Nieoczekiwany błąd ImagePicker");
       } else {
-        this.setState({ UserProfileIcon: response.uri });
+        this.setState({ userProfileIcon: response.uri });
         Alert.alert(response.uri);
         this.uploadPhoto(response.uri);
       }
@@ -242,9 +242,9 @@ export default class ModifyProfile extends Component {
                 returKeyType="next"
                 onSubmitEditing={() => this.userUserEmailInput.focus()}
                 onChangeText={username =>
-                  this.setState({ UserUserName: username })
+                  this.setState({ userUserName: username })
                 }
-                value={this.state.UserUserName}
+                value={this.state.userUserName}
                 style={styles.input}
               />
               <Text style={styles.input_header}>E-mail</Text>
@@ -254,7 +254,7 @@ export default class ModifyProfile extends Component {
                 returKeyType="next"
                 onSubmitEditing={() => this.userOldPasswordInput.focus()}
                 onChangeText={email => this.setState({ UserEmail: email })}
-                value={this.state.UserEmail}
+                value={this.state.userEmail}
                 ref={input => (this.userUserEmailInput = input)}
                 style={styles.input}
               />
@@ -266,7 +266,7 @@ export default class ModifyProfile extends Component {
                 returKeyType="next"
                 onSubmitEditing={() => this.userNewPasswordInput.focus()}
                 onChangeText={old_password =>
-                  this.setState({ UserOldPassword: old_password })
+                  this.setState({ userOldPassword: old_password })
                 }
                 ref={input => (this.userOldPasswordInput = input)}
                 style={styles.input}
@@ -279,9 +279,9 @@ export default class ModifyProfile extends Component {
                 returKeyType="next"
                 onSubmitEditing={() => this.userWeightInput.focus()}
                 onChangeText={new_password =>
-                  this.setState({ UserNewPassword: new_password })
+                  this.setState({ userNewPassword: new_password })
                 }
-                value={this.state.UserNewPassword}
+                value={this.state.userNewPassword}
                 ref={input => (this.userNewPasswordInput = input)}
                 style={styles.input}
               />
@@ -291,8 +291,8 @@ export default class ModifyProfile extends Component {
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
                 onSubmitEditing={() => this.userHeightInput.focus()}
-                onChangeText={weight => this.setState({ UserWeight: weight })}
-                value={this.state.UserWeight}
+                onChangeText={weight => this.setState({ userWeight: weight })}
+                value={this.state.userWeight}
                 ref={input => (this.userWeightInput = input)}
                 style={styles.input}
               />
@@ -302,13 +302,13 @@ export default class ModifyProfile extends Component {
                 placeholderTextColor="rgba(0,0,0,0.5)"
                 returKeyType="next"
                 onSubmitEditing={() => this.userHeightInput.focus()}
-                onChangeText={height => this.setState({ UserHeight: height })}
-                value={this.state.UserHeight}
+                onChangeText={height => this.setState({ userHeight: height })}
+                value={this.state.userHeight}
                 ref={input => (this.userHeightInput = input)}
                 style={styles.input}
               />
               <TouchableOpacity
-                onPress={this.UserModifyFunction}
+                onPress={this.userModifyFunction}
                 style={{
                   backgroundColor: "#000000",
                   borderWidth: 1,

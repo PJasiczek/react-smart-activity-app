@@ -16,6 +16,7 @@ import {
   Button,
   TextInput
 } from "react-native";
+import { HelperText, withTheme, Theme } from "react-native-paper";
 import Toast from "@remobile/react-native-toast";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -39,9 +40,62 @@ export default class ActivityParamsRunning extends Component {
       limitedDistance: "",
       limitedCalories: "",
       limitedSteps: "",
-      poolLengths: ""
+      poolLengths: "",
+      errorName: "",
+      errorLimitedDistance: "",
+      errorLimitedCalories: "",
+      errorLimitedSteps: "",
+      errorPoolLengths: ""
     };
   }
+
+  NavigateToActivityDetails = () => {
+    if (this.state.name != "") {
+      if (this.state.limitedDistance != "") {
+        if (this.state.limitedCalories != "") {
+          if (this.state.limitedSteps != "") {
+            this.props.navigation.navigate("ActivityInfo", {
+              backgroundImageSource: require("../../assets/images/cycling_background_opacity.jpg"),
+              activityType: this.state.activityType,
+              name: this.state.name,
+              limitedDistance: this.state.limitedDistance,
+              limitedCalories: this.state.limitedCalories,
+              limitedSteps: this.state.limitedSteps,
+              poolLengths: this.state.poolLengths
+            });
+          } else {
+            this.setState({
+              errorName: this.state.name,
+              errorLimitedDistance: this.state.limitedDistance,
+              errorLimitedCalories: this.state.limitedCalories,
+              errorLimitedSteps: "Proszę wpisać poprawny limit ilości kroków"
+            });
+          }
+        } else {
+          this.setState({
+            errorName: this.state.name,
+            errorLimitedDistance: this.state.limitedDistance,
+            errorLimitedCalories: "Proszę wpisać poprawny limit kalorii",
+            errorLimitedSteps: this.state.limitedSteps
+          });
+        }
+      } else {
+        this.setState({
+          errorName: this.state.name,
+          errorLimitedDistance: "Proszę wpisać poprawny limit dystansu",
+          errorLimitedCalories: this.state.limitedCalories,
+          errorLimitedSteps: this.state.limitedSteps
+        });
+      }
+    } else {
+      this.setState({
+        errorName: "Proszę wpisać poprawną nazwę twojego treningu",
+        errorLimitedDistance: this.state.limitedDistance,
+        errorLimitedCalories: this.state.limitedCalories,
+        errorLimitedSteps: this.state.limitedSteps
+      });
+    }
+  };
 
   onContentSizeChange = (contentWidth, contentHeight) => {
     this.setState({ screenHeight: contentHeight });
@@ -76,59 +130,168 @@ export default class ActivityParamsRunning extends Component {
             </View>
             <View style={styles.bottom_container}>
               <View style={styles.inputs_container}>
-                <TextInput
-                  placeholder="Nazwa treningu"
-                  placeholderTextColor="rgba(0,0,0,0.5)"
-                  returKeyType="next"
-                  onSubmitEditing={() => this.limitedDistanceInput.focus()}
-                  onChangeText={name => this.setState({ name: name })}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Limit dystansu (km)"
-                  placeholderTextColor="rgba(0,0,0,0.5)"
-                  returKeyType="next"
-                  onSubmitEditing={() => this.limitedCaloriesInput.focus()}
-                  onChangeText={limitedDistance =>
-                    this.setState({ limitedDistance: limitedDistance })
+                {this.state.errorName !=
+                "Proszę wpisać poprawną nazwę twojego treningu" ? (
+                  <TextInput
+                    placeholder="Nazwa treningu"
+                    placeholderTextColor="rgba(0,0,0,0.5)"
+                    returKeyType="next"
+                    onSubmitEditing={() => this.limitedDistanceInput.focus()}
+                    onChangeText={name => this.setState({ name: name })}
+                    style={styles.input}
+                  />
+                ) : (
+                  <TextInput
+                    placeholder="Nazwa treningu"
+                    placeholderTextColor="rgba(255,0,0,1.0)"
+                    returKeyType="next"
+                    onSubmitEditing={() => this.limitedDistanceInput.focus()}
+                    onChangeText={name => this.setState({ name: name })}
+                    value={this.state.name}
+                    style={styles.input_error}
+                  />
+                )}
+                <HelperText
+                  type="error"
+                  padding="none"
+                  visible={
+                    this.state.errorName == "" ||
+                    this.state.errorName !=
+                      "Proszę wpisać poprawną nazwę twojego treningu"
+                      ? false
+                      : true
                   }
-                  ref={input => (this.limitedDistanceInput = input)}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Limit kaloryczny (cal)"
-                  placeholderTextColor="rgba(0,0,0,0.5)"
-                  returKeyType="next"
-                  onSubmitEditing={() => this.limitedStepsInput.focus()}
-                  onChangeText={limitedCalories =>
-                    this.setState({ limitedCalories: limitedCalories })
+                >
+                  {this.state.errorName}
+                </HelperText>
+                {this.state.errorLimitedDistance !=
+                "Proszę wpisać poprawny limit dystansu" ? (
+                  <TextInput
+                    placeholder="Limit dystansu (km)"
+                    keyboardType="numeric"
+                    placeholderTextColor="rgba(0,0,0,0.5)"
+                    returKeyType="next"
+                    onSubmitEditing={() => this.limitedCaloriesInput.focus()}
+                    onChangeText={limitedDistance =>
+                      this.setState({ limitedDistance: limitedDistance })
+                    }
+                    ref={input => (this.limitedDistanceInput = input)}
+                    style={styles.input}
+                  />
+                ) : (
+                  <TextInput
+                    placeholder="Limit dystansu (km)"
+                    keyboardType="numeric"
+                    placeholderTextColor="rgba(255,0,0,1.0)"
+                    returKeyType="next"
+                    onSubmitEditing={() => this.limitedCaloriesInput.focus()}
+                    onChangeText={limitedDistance =>
+                      this.setState({ limitedDistance: limitedDistance })
+                    }
+                    ref={input => (this.limitedDistanceInput = input)}
+                    value={this.state.limitedDistance}
+                    style={styles.input_error}
+                  />
+                )}
+                <HelperText
+                  type="error"
+                  padding="none"
+                  visible={
+                    this.state.errorLimitedDistance == "" ||
+                    this.state.errorLimitedDistance !=
+                      "Proszę wpisać poprawny limit dystansu"
+                      ? false
+                      : true
                   }
-                  ref={input => (this.limitedCaloriesInput = input)}
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Limit kroków"
-                  placeholderTextColor="rgba(0,0,0,0.5)"
-                  returKeyType="next"
-                  ref={input => (this.limitedStepsInput = input)}
-                  onChangeText={limitedSteps =>
-                    this.setState({ limitedSteps: limitedSteps })
+                >
+                  {this.state.errorLimitedDistance}
+                </HelperText>
+                {this.state.errorLimitedCalories !=
+                "Proszę wpisać poprawny limit kalorii" ? (
+                  <TextInput
+                    placeholder="Limit kaloryczny (cal)"
+                    keyboardType="numeric"
+                    placeholderTextColor="rgba(0,0,0,0.5)"
+                    returKeyType="next"
+                    onSubmitEditing={() => this.limitedStepsInput.focus()}
+                    onChangeText={limitedCalories =>
+                      this.setState({ limitedCalories: limitedCalories })
+                    }
+                    ref={input => (this.limitedCaloriesInput = input)}
+                    style={styles.input}
+                  />
+                ) : (
+                  <TextInput
+                    placeholder="Limit kaloryczny (cal)"
+                    keyboardType="numeric"
+                    placeholderTextColor="rgba(255,0,0,1.0)"
+                    returKeyType="next"
+                    onSubmitEditing={() => this.limitedStepsInput.focus()}
+                    onChangeText={limitedCalories =>
+                      this.setState({ limitedCalories: limitedCalories })
+                    }
+                    ref={input => (this.limitedCaloriesInput = input)}
+                    value={this.state.limitedCalories}
+                    style={styles.input_error}
+                  />
+                )}
+                <HelperText
+                  type="error"
+                  padding="none"
+                  visible={
+                    this.state.errorLimitedCalories == "" ||
+                    this.state.errorLimitedCalories !=
+                      "Proszę wpisać poprawny limit kalorii"
+                      ? false
+                      : true
                   }
-                  ref={input => (this.limitedStepsInput = input)}
-                  style={styles.input}
-                />
+                >
+                  {this.state.errorLimitedCalories}
+                </HelperText>
+                {this.state.errorLimitedSteps !=
+                "Proszę wpisać poprawny limit ilości kroków" ? (
+                  <TextInput
+                    placeholder="Limit kroków"
+                    keyboardType="numeric"
+                    placeholderTextColor="rgba(0,0,0,0.5)"
+                    returKeyType="next"
+                    ref={input => (this.limitedStepsInput = input)}
+                    onChangeText={limitedSteps =>
+                      this.setState({ limitedSteps: limitedSteps })
+                    }
+                    ref={input => (this.limitedStepsInput = input)}
+                    style={styles.input}
+                  />
+                ) : (
+                  <TextInput
+                    placeholder="Limit kroków"
+                    keyboardType="numeric"
+                    placeholderTextColor="rgba(0,0,0,0.5)"
+                    returKeyType="next"
+                    ref={input => (this.limitedStepsInput = input)}
+                    onChangeText={limitedSteps =>
+                      this.setState({ limitedSteps: limitedSteps })
+                    }
+                    ref={input => (this.limitedStepsInput = input)}
+                    value={this.state.limitedSteps}
+                    style={styles.input_error}
+                  />
+                )}
+                <HelperText
+                  type="error"
+                  padding="none"
+                  visible={
+                    this.state.errorLimitedSteps == "" ||
+                    this.state.errorLimitedSteps !=
+                      "Proszę wpisać poprawny limit ilości kroków"
+                      ? false
+                      : true
+                  }
+                >
+                  {this.state.errorLimitedSteps}
+                </HelperText>
                 <TouchableOpacity
-                  onPress={() =>
-                    navigate("ActivityInfo", {
-                      backgroundImageSource: require("../../assets/images/run_background_opacity.jpg"),
-                      activityType: this.state.activityType,
-                      name: this.state.name,
-                      limitedDistance: this.state.limitedDistance,
-                      limitedCalories: this.state.limitedCalories,
-                      limitedSteps: this.state.limitedSteps,
-                      poolLengths: this.state.poolLengths
-                    })
-                  }
+                  onPress={this.NavigateToActivityDetails}
                   style={{
                     backgroundColor: "#000000",
                     borderWidth: 1,
@@ -254,9 +417,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.2)",
-    marginBottom: 20,
+    marginBottom: 0,
     fontFamily: "Quicksand-Light",
     color: "rgba(0,0,0,0.5)",
+    paddingHorizontal: 10
+  },
+  input_error: {
+    height: 40,
+    borderColor: "rgba(255,0,0,1.0)",
+    borderWidth: 1,
+    borderRadius: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,0,0,0.05)",
+    marginBottom: 0,
+    fontFamily: "Quicksand-Light",
+    color: "rgba(255,0,0,1.0)",
     paddingHorizontal: 10
   }
 });
