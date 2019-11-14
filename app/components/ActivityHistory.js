@@ -29,24 +29,51 @@ import { activityTypesIcon } from "./utils/ActivityTypes";
 const { width, height } = Dimensions.get("window");
 
 export default class ActivityHistory extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
+      userId: this.props.id,
       isLoading: true,
       dataSource: []
     };
   }
 
   componentDidMount() {
-    fetch("http://192.168.0.3/smartActivity/activity_history.php", {
+    fetch("http://jasiu1047.unixstorm.org/smartactivity/activity_history.php", {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        username: "jasiu1047"
+        id: this.state.userId
+      })
+    })
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState(
+          {
+            isLoading: false,
+            dataSource: responseJson
+          },
+          function() {}
+        );
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
+  componentDidUpdate() {
+    fetch("http://jasiu1047.unixstorm.org/smartactivity/activity_history.php", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: this.state.userId
       })
     })
       .then(response => response.json())
@@ -90,6 +117,7 @@ export default class ActivityHistory extends Component {
         </LinearGradient>
       );
     }
+    const { navigate } = this.props.navigation;
     return (
       <LinearGradient
         colors={["rgba(0,0,0,0.3)", "transparent"]}
@@ -244,7 +272,7 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
     backgroundColor: "transparent",
-    paddingBottom: Dimensions.get("window").height * 0.1
+    paddingBottom: Dimensions.get("window").height * 0.15
   },
   history_inner_container: {
     width: Dimensions.get("window").width * 0.85,
@@ -290,7 +318,7 @@ const styles = StyleSheet.create({
     marginRight: 20
   },
   history_inner_bottom_right_container: {
-    width: "45%",
+    width: "35%",
     height: "70%",
     alignItems: "center",
     justifyContent: "center",
@@ -320,7 +348,7 @@ const styles = StyleSheet.create({
   history_inner_value: {
     fontFamily: "Quicksand-Light",
     color: "#000000",
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "200"
   },
   history_inner_prefix: {
@@ -339,14 +367,14 @@ const styles = StyleSheet.create({
     marginLeft: 10
   },
   activity_history_distance_container: {
-    width: "25%",
+    width: "35%",
     height: "70%",
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "column"
   },
   activity_history_calories_container: {
-    width: "35%",
+    width: "30%",
     height: "70%",
     alignItems: "center",
     justifyContent: "center",

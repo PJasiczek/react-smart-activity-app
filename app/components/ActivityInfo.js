@@ -10,7 +10,8 @@ import {
   Image,
   ImageBackground,
   Alert,
-  Dimensions
+  Dimensions,
+  ToastAndroid
 } from "react-native";
 import {
   BallIndicator,
@@ -43,15 +44,15 @@ import haversine from "haversine";
 import moment from "moment";
 import "moment/locale/pl";
 
+import WeatherInfo from "./WeatherInfo";
+import ActivityDetails from "./ActivityDetails";
+
 const { width, height } = Dimensions.get("window");
 
 var converter = require("hex2dec");
 
-import WeatherInfo from "./WeatherInfo";
-import ActivityDetails from "./ActivityDetails";
-
-const LATITUDE_DELTA = 0.001;
-const LONGITUDE_DELTA = 0.001;
+const LATITUDE_DELTA = 0.0005;
+const LONGITUDE_DELTA = 0.0005;
 const LATITUDE = 0;
 const LONGITUDE = 0;
 
@@ -64,6 +65,7 @@ export default class ActivityInfo extends Component {
     super(props);
     this.manager = new BleManager();
     global.isActivityVisible = false;
+    global.stoperActivityTime = "";
     global.altitude = 0;
     global.distance = 0;
     global.speed = 0;
@@ -80,9 +82,12 @@ export default class ActivityInfo extends Component {
       longitudeDelta: 0
     });
     this.state = {
+      userId: this.props.navigation.state.params.id,
+      readCharacteristicsId: null,
+      startActivityTimerId: null,
+      fetchWeatherId: null,
       isWatchReady: false,
       confirmDialogVisible: false,
-      isRunning: false,
       isActivityReady: false,
       activityTimer: "3",
       activityDate: "",
@@ -142,6 +147,7 @@ export default class ActivityInfo extends Component {
       stopwatchStart: !this.state.stopwatchStart,
       stopwatchReset: false
     });
+    global.isActivityVisible = true;
   }
 
   resetStopwatch() {
@@ -154,6 +160,8 @@ export default class ActivityInfo extends Component {
     var seconds = crrTime.slice(6, 8);
     var minutes = crrTime.slice(3, 5);
     var hours = crrTime.slice(0, 2);
+    global.stoperActivityTime =
+      String(hours) + ":" + String(minutes) + ":" + String(seconds);
     global.stoper =
       (Number(seconds) + 60 * Number(minutes)) / 3600 + Number(hours);
   }
@@ -282,6 +290,8 @@ export default class ActivityInfo extends Component {
           this.error(
             "Bluetooth jest wyłączony. Jeśli chcesz połączyć sie z Smartwatchem włącz go!"
           );
+        } else if (error.message == "Device was disconnected") {
+          this.error("Utracono połączenie z urządzeniem");
         } else {
           this.error(error.message);
         }
@@ -289,7 +299,7 @@ export default class ActivityInfo extends Component {
       }
 
       if (device.name === "Mi Smart Band 4") {
-        this.info("Połączono z " + device.name + "(" + device.id + ")");
+        this.info("Łączenie z " + device.name + "(" + device.id + ")");
         this.manager.stopDeviceScan();
         device
           .connect()
@@ -300,7 +310,7 @@ export default class ActivityInfo extends Component {
           .then(device => {
             this.info("Czytanie...");
             this.readStartValueCharacteristics(device);
-            setInterval(() => {
+            let readCharacteristicsId = setInterval(() => {
               return this.readCharacteristics(device);
             }, 1000);
           })
@@ -451,7 +461,7 @@ export default class ActivityInfo extends Component {
       (error, characteristicHeart) => {
         if (error) {
           this.error(error.message);
-          Alert.alert(error.message);
+          Toast.showShortBottom(error.message);
           return;
         }
         const returnedHeartBeatValue = Buffer.from(
@@ -493,7 +503,7 @@ export default class ActivityInfo extends Component {
   }
 
   fetchWeather() {
-    setInterval(() => {
+    let fetchWeatherId = setInterval(() => {
       return fetch(
         "http://api.openweathermap.org/data/2.5/weather?lat=" +
           global.latitude +
@@ -534,7 +544,7 @@ export default class ActivityInfo extends Component {
 
   startActivityTimer = () => {
     if (this.state.isWatchReady == false) {
-      setInterval(() => {
+      let startActivityTimerId = setInterval(() => {
         var activityTimerCount = (
           Number(this.state.activityTimer) - 1
         ).toString();
@@ -554,32 +564,39 @@ export default class ActivityInfo extends Component {
   };
 
   publishDataActivity = () => {
-    fetch("http://192.168.0.3/smartActivity/publish_activity.php", {
+    fetch("http://jasiu1047.unixstorm.org/smartactivity/publish_activity.php", {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        username: "jasiu1047",
+        id: this.state.userId,
         name: this.state.name,
         type: this.state.activityType,
-        time: this.currentTime,
+        time: global.stoperActivityTime,
         date: this.state.activityDate,
         distance: global.distance,
         steps: this.state.steps,
         calories: this.state.calories,
         max_pace: global.max_pace,
         max_speed: global.max_speed,
-        max_heart_beat: global.max_heart_beat,
-        min_heart_beat: global.min_heart_beat
+        max_heart_beat: this.state.max_heart_beat,
+        min_heart_beat: this.state.min_heart_beat
       })
     })
       .then(response => response.json())
       .then(responseJson => {
-        Toast.showShortBottom(responseJson);
-        this.props.navigation.navigate("ActivityHistory");
+        this.setState({ confirmDialogVisible: false });
+        this.clearInterval(readCharacteristicsId);
+        this.clearInterval(startActivityTimerId);
+        this.clearInterval(fetchWeatherId);
         this.clearActivityDetailsComponent();
+        this.props.navigation.navigate("ActivityHistory", {
+          id: this.state.userId
+        });
+        global.isActivityVisible = false;
+        Toast.showShortBottom(responseJson);
       })
       .catch(error => {
         console.error(error);
@@ -611,9 +628,9 @@ export default class ActivityInfo extends Component {
 
   clearActivityDetailsComponent = () => {
     global.isActivityVisible = false;
+    global.stoperActivityTime = "";
     global.altitude = 0;
     global.distance = 0;
-    global.stoper = "";
     global.speed = 0;
     global.pace = 0;
     global.max_speed = 0;
@@ -630,29 +647,31 @@ export default class ActivityInfo extends Component {
     this.state = {
       isWatchReady: false,
       confirmDialogVisible: false,
-      isRunning: false,
       isActivityReady: false,
       activityTimer: "3",
+      activityDate: "",
       date: "",
-      backgroundImageSource: this.props.navigation.state.params
-        .backgroundImageSource,
-      activityType: this.props.navigation.state.params.activityType,
-      name: this.props.navigation.state.params.name,
+      stoper: "",
+      backgroundImageSource: null,
+      activityType: null,
+      name: null,
       info: "",
       paceDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       heightIncreaseDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       heartBeatDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       speedDataArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       start_distance: 0,
-      limitedDistance: this.props.navigation.state.params.limitedDistance,
+      limitedDistance: "",
       steps: 0,
       start_steps: 0,
-      limitedSteps: this.props.navigation.state.params.limitedSteps,
+      limitedSteps: "",
       calories: 0,
       start_calories: 0,
-      limitedCalories: this.props.navigation.state.params.limitedCalories,
-      poolLengths: this.props.navigation.state.params.poolLengths,
+      limitedCalories: "",
+      poolLengths: "",
       heart: 0,
+      max_heart_beat: 0,
+      min_heart_beat: 0,
       isLoading: true,
       id: 0,
       iDay: true,
@@ -868,7 +887,7 @@ export default class ActivityInfo extends Component {
                     positiveButton={{
                       title: "Tak",
                       onPress: () => {
-                        this.publishDataActivity;
+                        this.publishDataActivity();
                       },
                       titleStyle: {
                         textAlign: "center",

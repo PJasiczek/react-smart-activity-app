@@ -8,8 +8,11 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Alert,
-  Animated
+  Animated,
+  ToastAndroid
 } from "react-native";
+import { HelperText, withTheme, Theme } from "react-native-paper";
+import Toast from "@remobile/react-native-toast";
 import LinearGradient from "react-native-linear-gradient";
 
 export default class Login extends Component {
@@ -19,36 +22,49 @@ export default class Login extends Component {
 
   constructor(props) {
     super(props);
-
     this.state = {
-      UserUserName: "",
-      UserPassword: ""
+      userUserName: "",
+      userPassword: "",
+      errorUserName: "",
+      errorPassword: ""
     };
   }
 
-  UserLoginFunction = () => {
-    const { UserUserName } = this.state;
-    const { UserPassword } = this.state;
+  userLoginFunction = () => {
+    const { userUserName } = this.state;
+    const { userPassword } = this.state;
 
-    fetch("http://192.168.0.3/smartActivity/user_login.php", {
+    fetch("http://jasiu1047.unixstorm.org/smartactivity/user_login.php", {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        username: UserUserName,
-        password: UserPassword
+        username: userUserName,
+        password: userPassword
       })
     })
       .then(response => response.json())
       .then(responseJson => {
-        if (responseJson === "true") {
-          this.props.navigation.navigate("UserHome", {
-            username: UserUserName
+        if (this.state.userUserName != "" && this.state.userPassword != "") {
+          if (responseJson != "Nieprawidłowa nazwa użytkownika lub hasło") {
+            this.props.navigation.navigate("UserHome", {
+              id: responseJson
+            });
+          } else {
+            Toast.showShortTop(responseJson);
+          }
+        } else if (this.state.userUserName == "") {
+          this.setState({
+            errorUserName: "Proszę wpisać poprawną nazwę użytkonika",
+            errorPassword: ""
           });
-        } else {
-          Alert.alert(responseJson);
+        } else if (this.state.userPassword == "") {
+          this.setState({
+            errorUserName: "",
+            errorPassword: "Proszę wpisać poprawne hasło"
+          });
         }
       })
       .catch(error => {
@@ -78,30 +94,85 @@ export default class Login extends Component {
               KONTO UMOŻLIWIAJĄCE DOSTĘP DO WSZYSTKICH USŁUG SMART ACTIVITY
             </Text>
           </View>
-          <TextInput
-            placeholder="Nazwa użytkownika"
-            placeholderTextColor="rgba(0,0,0,0.7)"
-            returKeyType="next"
-            onSubmitEditing={() => this.passwordInput.focus()}
-            onChangeText={UserUserName => this.setState({ UserUserName })}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Hasło"
-            placeholderTextColor="rgba(0,0,0,0.7)"
-            secureTextEntry
-            returKeyType="go"
-            ref={input => (this.passwordInput = input)}
-            onChangeText={UserPassword => this.setState({ UserPassword })}
-            style={styles.input}
-          />
-          <TouchableOpacity
-            onPress={() =>
-              this.props.navigation.navigate("UserHome", {
-                username: this.state.UserUserName
-              })
+          {this.state.errorUserName !=
+          "Proszę wpisać poprawną nazwę użytkonika" ? (
+            <TextInput
+              placeholder="Nazwa użytkownika"
+              placeholderTextColor="rgba(0,0,0,0.7)"
+              returKeyType="next"
+              onSubmitEditing={() => this.userPasswordInput.focus()}
+              onChangeText={username =>
+                this.setState({ userUserName: username })
+              }
+              value={this.state.userUserName}
+              style={styles.input}
+            />
+          ) : (
+            <TextInput
+              placeholder="Nazwa użytkownika"
+              placeholderTextColor="rgba(255,0,0,1.0)"
+              returKeyType="next"
+              onSubmitEditing={() => this.userPasswordInput.focus()}
+              onChangeText={username =>
+                this.setState({ userUserName: username })
+              }
+              value={this.state.userUserName}
+              style={styles.input_error}
+            />
+          )}
+          <HelperText
+            type="error"
+            padding="none"
+            visible={
+              this.state.errorUserName == "" ||
+              this.state.errorUserName !=
+                "Proszę wpisać poprawną nazwę użytkonika"
+                ? false
+                : true
             }
-            //onPress={this.UserLoginFunction}
+          >
+            {this.state.errorUserName}
+          </HelperText>
+          {this.state.errorPassword != "Proszę wpisać poprawne hasło" ? (
+            <TextInput
+              placeholder="Hasło"
+              placeholderTextColor="rgba(0,0,0,0.7)"
+              secureTextEntry
+              returKeyType="go"
+              ref={input => (this.userPasswordInput = input)}
+              onChangeText={password =>
+                this.setState({ userPassword: password })
+              }
+              style={styles.input}
+            />
+          ) : (
+            <TextInput
+              placeholder="Hasło"
+              placeholderTextColor="rgba(255,0,0,1.0)"
+              secureTextEntry
+              returKeyType="go"
+              ref={input => (this.userPasswordInput = input)}
+              onChangeText={password =>
+                this.setState({ userPassword: password })
+              }
+              value={this.state.userPassword}
+              style={styles.input_error}
+            />
+          )}
+          <HelperText
+            type="error"
+            padding="none"
+            visible={
+              this.state.errorPassword == "" ||
+              this.state.errorPassword != "Proszę wpisać poprawne hasło"
+                ? false
+                : true
+            }
+          >
+            {this.state.errorPassword}
+          </HelperText>
+          <TouchableOpacity
+            onPress={this.userLoginFunction}
             style={{
               backgroundColor: "#000000",
               borderWidth: 1,
@@ -175,6 +246,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     opacity: 0.9
   },
+  healper_text: {
+    marginBottom: 5
+  },
   input: {
     height: 40,
     borderColor: "rgba(0,0,0,0.2)",
@@ -183,9 +257,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.2)",
-    marginBottom: 15,
+    marginBottom: 0,
     fontFamily: "Quicksand-Light",
     color: "#000000",
+    paddingHorizontal: 10
+  },
+  input_error: {
+    height: 40,
+    borderColor: "rgba(255,0,0,1.0)",
+    borderWidth: 1,
+    borderRadius: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,0,0,0.05)",
+    marginBottom: 0,
+    fontFamily: "Quicksand-Light",
+    color: "rgba(255,0,0,1.0)",
     paddingHorizontal: 10
   }
 });

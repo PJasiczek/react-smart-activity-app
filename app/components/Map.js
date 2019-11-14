@@ -90,7 +90,7 @@ export default class Map extends Component {
 
     this.locationSubscription = RNLocation.subscribeToLocationUpdates(
       locations => {
-        const { latitude, longitud } = locations[0];
+        const { latitude, longitude } = locations[0];
         const newCoordinate = {
           latitude,
           longitude

@@ -57,8 +57,8 @@ export default class ModifyProfile extends Component {
       isUploading: false,
       screenHeight: 0,
       imageSource: null,
+      userId: this.props.navigation.state.params.id,
       userUserName: "",
-      userNewUserName: "",
       userOldPassword: "",
       userNewPassword: "",
       userEmail: "",
@@ -69,24 +69,27 @@ export default class ModifyProfile extends Component {
   }
 
   componentDidMount() {
-    return fetch("http://192.168.0.3/smartActivity/user_data_values.php", {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: "jasiu1047"
-      })
-    })
+    return fetch(
+      "http://jasiu1047.unixstorm.org/smartactivity/user_data_values.php",
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: this.state.userId
+        })
+      }
+    )
       .then(response => response.json())
       .then(responseJson => {
         this.setState({
-          userOldPassword: responseJson[0].password,
+          userUserName: responseJson[0].username,
           userEmail: responseJson[0].email,
           userWeight: responseJson[0].weight,
           userHeight: responseJson[0].height,
-          imageSource: responseJson[0].profile_icon
+          userProfileIcon: responseJson[0].profile_icon
         });
       })
       .catch(error => {
@@ -95,22 +98,24 @@ export default class ModifyProfile extends Component {
   }
 
   userModifyFunction = () => {
-    fetch("http://192.168.0.3/smartActivity/user_profile_modify.php", {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: this.state.userUserName,
-        new_username: this.state.userNewUserName,
-        email: this.state.userEmail,
-        new_password: this.state.userNewPassword,
-        weight: this.state.userWeight,
-        height: this.state.userHeight,
-        profile_icon: this.state.userProfileIcon
-      })
-    })
+    fetch(
+      "http://jasiu1047.unixstorm.org/smartactivity/user_profile_modify.php",
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: this.state.userId,
+          password: this.state.userNewPassword,
+          email: this.state.userEmail,
+          weight: this.state.userWeight,
+          height: this.state.userHeight,
+          profile_icon: this.state.userProfileIcon
+        })
+      }
+    )
       .then(response => response.json())
       .then(responseJson => {
         Toast.showShortBottom(responseJson);
@@ -141,7 +146,7 @@ export default class ModifyProfile extends Component {
 
   uploadPhoto = async imageUri => {
     this.setState({ isUploading: true });
-    let baseUrl = "http://192.168.0.3/smartActivity/";
+    let baseUrl = "http://jasiu1047.unixstorm.org/smartactivity/";
     let uploadData = new FormData();
 
     uploadData.append("submit", "ok");
@@ -161,6 +166,7 @@ export default class ModifyProfile extends Component {
             isUploading: false,
             imageSource: baseUrl + response.image
           });
+          Alert.alert(response.image);
         } else {
           this.setState({ isUploading: false });
           Alert.alert("Błąd", response.message);
@@ -174,7 +180,7 @@ export default class ModifyProfile extends Component {
 
   render() {
     const scrollEnabled = this.state.screenHeight > height;
-
+    const { navigate } = this.props.navigation;
     if (this.state.isLoading) {
       return (
         <LinearGradient
@@ -215,6 +221,15 @@ export default class ModifyProfile extends Component {
           scrollEnabled={scrollEnabled}
           onContentSizeChange={this.onContentSizeChange}
         >
+          <TouchableOpacity
+            onPress={() => this.props.navigation.goBack()}
+            style={styles.menu_open}
+          >
+            <Image
+              style={styles.menu_button}
+              source={require("../../assets/images/icons/left_arrow.png")}
+            />
+          </TouchableOpacity>
           <KeyboardAvoidingView behavior="padding" style={styles.container}>
             <View style={styles.logo_container}>
               <TouchableOpacity onPress={this.selectProfileIcon.bind(this)}>
@@ -226,9 +241,13 @@ export default class ModifyProfile extends Component {
                   <Image
                     style={styles.profile_icon}
                     source={
-                      this.state.imageSource != null
-                        ? { uri: this.state.imageSource }
-                        : require("../../assets/images/icons/default_profile_picture.png")
+                      this.state.imageSource == null
+                        ? {
+                            uri:
+                              "http://jasiu1047.unixstorm.org/smartactivity/upload/images/" +
+                              this.state.userProfileIcon
+                          }
+                        : { uri: this.state.imageSource }
                     }
                   />
                 </View>
@@ -349,27 +368,44 @@ const styles = StyleSheet.create({
   },
   profile_icon_container: {
     marginTop: 40,
-    width: 170,
-    height: 170,
-    borderRadius: 85,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     borderColor: "rgba(0,0,0,0.5)",
     borderWidth: 2
   },
   profile_icon: {
-    width: 166,
-    height: 166,
-    borderRadius: 85
+    width: 136,
+    height: 136,
+    borderRadius: 68
   },
   plus_action_container: {
     position: "absolute",
-    height: 30,
-    width: 30,
+    height: 25,
+    width: 25,
     top: 1,
     right: 20,
     zIndex: 3
   },
   inputs_container: {
     padding: 20
+  },
+  menu_button: {
+    width: 20,
+    height: 20,
+    zIndex: 3
+  },
+  menu_open: {
+    position: "absolute",
+    width: 20,
+    height: 20,
+    left: 20,
+    top: 40,
+    borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+    zIndex: 3
   },
   logo: {
     width: 100,
@@ -449,7 +485,7 @@ const styles = StyleSheet.create({
   input_header: {
     fontFamily: "Quicksand-Bold",
     color: "rgba(0,0,0,0.5)",
-    fontSize: 12,
+    fontSize: 10,
     marginLeft: 10,
     marginBottom: 5
   }

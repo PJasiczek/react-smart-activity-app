@@ -9,7 +9,15 @@ export default class UserHome extends Component {
       header: null
     };
   };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      id: this.props.navigation.state.params.id
+    };
+  }
+
   render() {
-    return <DrawerNavigation />;
+    return <DrawerNavigation screenProps={{ id: this.state.id }} />;
   }
 }

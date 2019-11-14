@@ -12,6 +12,43 @@ export default class DrawerComponent extends Component {
     this.props.navigation.dispatch(navigateAction);
   };
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      userId: this.props.id,
+      userFirstName: "",
+      userLastName: "",
+      userProfileIcon: ""
+    };
+  }
+
+  componentDidMount() {
+    return fetch(
+      "http://jasiu1047.unixstorm.org/smartactivity/user_data_values.php",
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: this.state.userId
+        })
+      }
+    )
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({
+          userFirstName: responseJson[0].first_name,
+          userLastName: responseJson[0].last_name,
+          userProfileIcon: responseJson[0].profile_icon
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -20,11 +57,17 @@ export default class DrawerComponent extends Component {
             <View style={styles.profile_icon}>
               <Image
                 style={styles.icon}
-                source={require("../../../assets/images/profil_icon.png")}
+                source={{
+                  uri:
+                    "http://jasiu1047.unixstorm.org/smartactivity/upload/images/" +
+                    this.state.userProfileIcon
+                }}
               />
             </View>
             <View style={styles.profile_header}>
-              <Text style={styles.header}>Piotr Jasiczek</Text>
+              <Text style={styles.header}>
+                {this.state.userFirstName} {this.state.userLastName}
+              </Text>
             </View>
           </View>
           <View style={styles.bottom_container}>
@@ -32,7 +75,7 @@ export default class DrawerComponent extends Component {
               <Icon1
                 name="log-out"
                 style={styles.icons}
-                onPress={this.navigateToScreen("Settings")}
+                onPress={this.navigateToScreen("Login")}
               />
             </View>
           </View>
@@ -198,11 +241,13 @@ const styles = StyleSheet.create({
   bottom_container: {
     position: "absolute",
     right: 0,
-    top: "5%"
+    top: "5%",
+    backgroundColor: "transparent"
   },
   profile_container: {
     height: 120,
-    width: "90%"
+    width: "90%",
+    backgroundColor: "transparent"
   },
   profile: {
     position: "relative",
@@ -247,7 +292,8 @@ const styles = StyleSheet.create({
     height: 30,
     flexDirection: "row",
     alignItems: "center",
-    width: "100%"
+    width: "100%",
+    backgroundColor: "transparent"
   },
   text_style: {
     fontFamily: "Quicksand-Bold",

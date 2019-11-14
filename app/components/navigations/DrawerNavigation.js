@@ -20,11 +20,26 @@ import DrawerComponent from "./DrawerComponent";
 
 const NavigationStack = createDrawerNavigator(
   {
-    Profile: { screen: Profile },
-    MyActivity: { screen: MyActivity },
+    Profile: {
+      screen: props => (
+        <Profile navigation={props.navigation} id={props.screenProps.id} />
+      )
+    },
+    MyActivity: {
+      screen: props => (
+        <MyActivity navigation={props.navigation} id={props.screenProps.id} />
+      )
+    },
     ActivityMap: { screen: ActivityMap },
     ActivityInfo: { screen: ActivityInfo },
-    ActivityHistory: { screen: ActivityHistory },
+    ActivityHistory: {
+      screen: props => (
+        <ActivityHistory
+          navigation={props.navigation}
+          id={props.screenProps.id}
+        />
+      )
+    },
     Map: { screen: Map },
     Settings: { screen: Settings },
     CreateAccount: { screen: CreateAccount },
@@ -35,7 +50,12 @@ const NavigationStack = createDrawerNavigator(
     ActivityParamsWalking: { screen: ActivityParamsWalking }
   },
   {
-    contentComponent: DrawerComponent,
+    contentComponent: props => (
+      <DrawerComponent
+        navigation={props.navigation}
+        id={props.screenProps.id}
+      />
+    ),
     drawerBackgroundColor: "rgba(255,255,255,0.7)"
   }
 );

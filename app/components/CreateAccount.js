@@ -48,24 +48,27 @@ export default class CreateAccount extends Component {
       userUserName: this.props.navigation.state.params.username,
       userWeight: "",
       userHeight: "",
-      userProfileIcon: ""
+      userProfileIcon: "000000001.jpg"
     };
   }
 
   userModifyFunction = () => {
-    fetch("http://192.168.0.3/smartActivity/user_account_modify.php", {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: this.state.userUserName,
-        weight: this.state.userWeight,
-        height: this.state.userHeight,
-        profile_icon: this.state.userProfileIcon
-      })
-    })
+    fetch(
+      "http://jasiu1047.unixstorm.org/smartactivity/user_account_modify.php",
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.userUserName,
+          weight: this.state.userWeight,
+          height: this.state.userHeight,
+          profile_icon: this.state.userProfileIcon
+        })
+      }
+    )
       .then(response => response.json())
       .then(responseJson => {
         Toast.showShortBottom(responseJson);
@@ -95,7 +98,7 @@ export default class CreateAccount extends Component {
 
   uploadPhoto = async imageUri => {
     this.setState({ isUploading: true });
-    let baseUrl = "http://192.168.0.3/smartActivity/";
+    let baseUrl = "http://jasiu1047.unixstorm.org/smartactivity/";
     let uploadData = new FormData();
 
     uploadData.append("submit", "ok");
@@ -113,7 +116,8 @@ export default class CreateAccount extends Component {
         if (response.status) {
           this.setState({
             isUploading: false,
-            imageSource: baseUrl + response.image
+            imageSource: baseUrl + response.image,
+            userProfileIcon: response.file_name + ".jpg"
           });
         } else {
           this.setState({ isUploading: false });
@@ -180,9 +184,12 @@ export default class CreateAccount extends Component {
                   <Image
                     style={styles.profile_icon}
                     source={
-                      this.state.imageSource != null
-                        ? { uri: this.state.imageSource }
-                        : require("../../assets/images/icons/default_profile_picture.png")
+                      this.state.imageSource == null
+                        ? {
+                            uri:
+                              "http://jasiu1047.unixstorm.org/smartactivity/upload/images/000000001.jpg"
+                          }
+                        : { uri: this.state.imageSource }
                     }
                   />
                 </View>

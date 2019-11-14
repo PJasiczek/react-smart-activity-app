@@ -34,6 +34,7 @@ export default class ActivityParamsSwimming extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      userId: this.props.navigation.state.params.id,
       screenHeight: 0,
       activityType: this.props.navigation.state.params.activityType,
       name: "",
@@ -54,7 +55,8 @@ export default class ActivityParamsSwimming extends Component {
       if (this.state.limitedDistance != "") {
         if (this.state.limitedCalories != "") {
           if (this.state.poolLengths != "") {
-            navigate("ActivityInfo", {
+            this.props.navigation.navigate("ActivityInfo", {
+              id: this.state.userId,
               backgroundImageSource: require("../../assets/images/cycling_background_opacity.jpg"),
               activityType: this.state.activityType,
               name: this.state.name,

@@ -39,10 +39,11 @@ import moment from "moment";
 const { width, height } = Dimensions.get("window");
 
 export default class Profile extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       isLoading: false,
+      userId: this.props.id,
       userFirstName: "",
       userLastName: "",
       userAge: "",
@@ -62,26 +63,31 @@ export default class Profile extends Component {
   }
 
   getProfileUserData = () => {
-    return fetch("http://192.168.0.3/smartActivity/user_data_values.php", {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: "jasiu1047"
-      })
-    })
+    return fetch(
+      "http://jasiu1047.unixstorm.org/smartactivity/user_data_values.php",
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: this.state.userId
+        })
+      }
+    )
       .then(response => response.json())
       .then(responseJson => {
         this.setState({
           userFirstName: responseJson[0].first_name,
           userLastName: responseJson[0].last_name,
-          userAge: responseJson[0].date_of_birth,
+          userAge:
+            Number(moment().format("YYYY")) -
+            Number(moment(responseJson[0].date_of_birth, "YYYY-MM-DD").year()),
           userCountry: responseJson[0].country,
           userWeight: responseJson[0].weight,
           userHeight: responseJson[0].height,
-          userProfileIcon: responseJson[0].profil_icon
+          userProfileIcon: responseJson[0].profile_icon
         });
       })
       .catch(error => {
@@ -91,7 +97,7 @@ export default class Profile extends Component {
 
   getActivityDayInfoToChart = () => {
     return fetch(
-      "http://192.168.0.3/smartActivity/user_chart_day_activity.php",
+      "http://jasiu1047.unixstorm.org/smartactivity/user_chart_day_activity.php",
       {
         method: "PUT",
         headers: {
@@ -99,7 +105,7 @@ export default class Profile extends Component {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          username: "jasiu1047"
+          id: this.state.userId
         })
       }
     )
@@ -110,7 +116,7 @@ export default class Profile extends Component {
           fourDayAgo: responseJson[0].four_day_ago,
           threeDayAgo: responseJson[0].three_day_ago,
           twoDayAgo: responseJson[0].two_day_ago,
-          oneDayAgoo: responseJson[0].one_day_ago,
+          oneDayAgo: responseJson[0].one_day_ago,
           thisDay: responseJson[0].this_day
         });
       })
@@ -121,7 +127,7 @@ export default class Profile extends Component {
 
   getActivityMonthInfoToChart = () => {
     return fetch(
-      "http://192.168.0.3/smartActivity/user_chart_month_activity.php",
+      "http://jasiu1047.unixstorm.org/smartactivity/user_chart_month_activity.php",
       {
         method: "PUT",
         headers: {
@@ -129,7 +135,7 @@ export default class Profile extends Component {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          username: "jasiu1047"
+          id: this.state.userId
         })
       }
     )
@@ -214,6 +220,7 @@ export default class Profile extends Component {
         }
       ]
     };
+    const { navigate } = this.props.navigation;
     return (
       <View style={styles.container}>
         <View style={styles.top_container}>
@@ -230,7 +237,7 @@ export default class Profile extends Component {
               />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => this.props.navigation.navigate("Settings")}
+              onPress={() => navigate("Settings")}
               style={styles.settings_button}
             >
               <Image
@@ -240,7 +247,11 @@ export default class Profile extends Component {
             </TouchableOpacity>
             <View style={styles.icon_container}>
               <TouchableOpacity
-                onPress={() => this.props.navigation.navigate("ModifyProfile")}
+                onPress={() =>
+                  navigate("ModifyProfile", {
+                    id: this.state.userId
+                  })
+                }
                 style={styles.edit_action_container}
               >
                 <Image
@@ -250,12 +261,17 @@ export default class Profile extends Component {
               </TouchableOpacity>
               <Image
                 style={styles.icon}
-                source={require("../../assets/images/profil_icon.png")}
+                source={{
+                  uri:
+                    "http://jasiu1047.unixstorm.org/smartactivity/upload/images/" +
+                    this.state.userProfileIcon
+                }}
               />
             </View>
-
-            <Text style={styles.header}>Piotr Jasiczek</Text>
-            <Text style={styles.pre_header}>Polska</Text>
+            <Text style={styles.header}>
+              {this.state.userFirstName} {this.state.userLastName}
+            </Text>
+            <Text style={styles.pre_header}>{this.state.userCountry}</Text>
           </View>
           <View style={styles.top_middle_container}>
             <View style={styles.inner_top_container}>
@@ -267,7 +283,7 @@ export default class Profile extends Component {
                     fontSize: 19
                   }}
                 >
-                  23
+                  {this.state.userAge}
                 </Text>
               </Text>
               <Text style={styles.inner_top_label}>Wiek</Text>
@@ -281,7 +297,7 @@ export default class Profile extends Component {
                     fontSize: 19
                   }}
                 >
-                  189{" "}
+                  {this.state.userHeight}{" "}
                 </Text>
                 cm
               </Text>
@@ -296,7 +312,7 @@ export default class Profile extends Component {
                     fontSize: 19
                   }}
                 >
-                  75{" "}
+                  {this.state.userWeight}{" "}
                 </Text>
                 kg
               </Text>
@@ -539,9 +555,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: null,
     alignSelf: "stretch",
-    borderRadius: 50,
-    borderColor: "#ffffff",
-    borderWidth: 4
+    borderRadius: 50
   },
   chart_header: {
     fontFamily: "Quicksand-Light",

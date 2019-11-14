@@ -91,31 +91,34 @@ export default class Registration extends Component {
   };
 
   userRegistrationFunction = () => {
-    fetch("http://192.168.0.3/smartActivity/user_registration.php", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: this.state.userUserName,
-        password: this.state.userPassword,
-        email: this.state.userEmail,
-        first_name: this.state.userFirstName,
-        last_name: this.state.userLastName,
-        date_of_birth:
-          this.state.pickerValueYear +
-          "-" +
-          this.state.pickerValueMonth +
-          "-" +
-          this.state.pickerValueDay,
-        country: this.state.userCountry,
-        sex: this.state.value,
-        weight: this.state.userWeight,
-        height: this.state.userHeight,
-        profile_icon: this.state.userProfileIcon
-      })
-    })
+    fetch(
+      "http://jasiu1047.unixstorm.org/smartactivity/user_registration.php",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.userUserName,
+          password: this.state.userPassword,
+          email: this.state.userEmail,
+          first_name: this.state.userFirstName,
+          last_name: this.state.userLastName,
+          date_of_birth:
+            this.state.pickerValueYear +
+            "-" +
+            this.state.pickerValueMonth +
+            "-" +
+            this.state.pickerValueDay,
+          country: this.state.userCountry,
+          sex: this.state.value,
+          weight: this.state.userWeight,
+          height: this.state.userHeight,
+          profile_icon: this.state.userProfileIcon
+        })
+      }
+    )
       .then(response => response.json())
       .then(responseJson => {
         if (responseJson == "Użytkownik istnieje już w systemie") {
@@ -217,7 +220,9 @@ export default class Registration extends Component {
   };
 
   componentDidMount() {
-    return fetch("http://192.168.0.3/smartActivity/countries_pl.json")
+    return fetch(
+      "http://jasiu1047.unixstorm.org/smartactivity/countries_pl.json"
+    )
       .then(response => response.json())
       .then(responseJson => {
         this.setState(
@@ -948,7 +953,7 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   button_container: {
-    width: 160,
+    width: "50%",
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",

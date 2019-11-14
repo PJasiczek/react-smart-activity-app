@@ -21,6 +21,14 @@ export default class Settings extends Component {
     header: null
   };
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      userId: this.props.id
+    };
+  }
+
   render() {
     const { navigate } = this.props.navigation;
     const shadowOptButton = {
@@ -102,6 +110,7 @@ export default class Settings extends Component {
                         <TouchableOpacity
                           onPress={() =>
                             navigate("ActivityParamsCycling", {
+                              id: this.state.userId,
                               activityType: 1
                             })
                           }
@@ -150,6 +159,7 @@ export default class Settings extends Component {
                         <TouchableOpacity
                           onPress={() =>
                             navigate("ActivityParamsSwimming", {
+                              id: this.state.userId,
                               activityType: 2
                             })
                           }
@@ -198,6 +208,7 @@ export default class Settings extends Component {
                         <TouchableOpacity
                           onPress={() =>
                             navigate("ActivityParamsWalking", {
+                              id: this.state.userId,
                               activityType: 3
                             })
                           }
@@ -247,6 +258,7 @@ export default class Settings extends Component {
                         <TouchableOpacity
                           onPress={() =>
                             navigate("ActivityParamsRunning", {
+                              id: this.state.userId,
                               activityType: 4
                             })
                           }
