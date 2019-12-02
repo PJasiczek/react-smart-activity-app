@@ -4,6 +4,8 @@ import { Text, View, StyleSheet, ImageBackground, Image } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Icon1 from "react-native-vector-icons/Entypo";
 
+import ActivityInfo from "../ActivityInfo";
+
 export default class DrawerComponent extends Component {
   navigateToScreen = route => () => {
     const navigateAction = NavigationActions.navigate({

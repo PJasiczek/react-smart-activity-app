@@ -57,7 +57,7 @@ export default class ActivityParamsSwimming extends Component {
           if (this.state.poolLengths != "") {
             this.props.navigation.navigate("ActivityInfo", {
               id: this.state.userId,
-              backgroundImageSource: require("../../assets/images/cycling_background_opacity.jpg"),
+              backgroundImageSource: require("../../assets/images/swim_background_opacity.jpg"),
               activityType: this.state.activityType,
               name: this.state.name,
               limitedDistance: this.state.limitedDistance,

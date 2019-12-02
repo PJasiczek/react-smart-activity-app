@@ -14,7 +14,8 @@ import {
   Alert,
   Picker,
   Button,
-  TextInput
+  TextInput,
+  ToastAndroid
 } from "react-native";
 import {
   BallIndicator,
@@ -28,6 +29,7 @@ import {
   WaveIndicator
 } from "react-native-indicators";
 import Toast from "@remobile/react-native-toast";
+import { HelperText, withTheme, Theme } from "react-native-paper";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/FontAwesome";
 import ImagePicker from "react-native-image-picker";
@@ -64,7 +66,10 @@ export default class ModifyProfile extends Component {
       userEmail: "",
       userWeight: "",
       userHeight: "",
-      userProfileIcon: ""
+      userProfileIcon: "",
+      errorEmail: "",
+      errorWeight: "",
+      errorHeight: ""
     };
   }
 
@@ -86,6 +91,7 @@ export default class ModifyProfile extends Component {
       .then(responseJson => {
         this.setState({
           userUserName: responseJson[0].username,
+          userOldPassword: responseJson[0].password,
           userEmail: responseJson[0].email,
           userWeight: responseJson[0].weight,
           userHeight: responseJson[0].height,
@@ -108,7 +114,10 @@ export default class ModifyProfile extends Component {
         },
         body: JSON.stringify({
           id: this.state.userId,
-          password: this.state.userNewPassword,
+          password:
+            this.state.userNewPassword == this.state.userOldPassword
+              ? this.state.userNewPassword
+              : this.state.userOldPassword,
           email: this.state.userEmail,
           weight: this.state.userWeight,
           height: this.state.userHeight,
@@ -118,8 +127,35 @@ export default class ModifyProfile extends Component {
     )
       .then(response => response.json())
       .then(responseJson => {
-        Toast.showShortBottom(responseJson);
-        this.props.navigation.navigate("Profile");
+        if (
+          this.state.userEmail != "" &&
+          this.state.userWeight != "" &&
+          this.state.userHeight != ""
+        ) {
+          if (responseJson != "Nastąpiło poprawna modyfikacja konta") {
+            this.props.navigation.navigate("Profile");
+          } else {
+            Toast.showShortBottom(responseJson);
+          }
+        } else if (this.state.userEmail == "") {
+          this.setState({
+            errorUserName: "Proszę wpisać poprawny adres skrzynki pocztowej",
+            errorWeight: "",
+            errorHeight: ""
+          });
+        } else if (this.state.userWeight == "") {
+          this.setState({
+            errorUserName: "",
+            errorWeight: "Proszę wpisać poprawną wagę ciała",
+            errorHeight: ""
+          });
+        } else if (this.state.userHeight == "") {
+          this.setState({
+            errorUserName: "",
+            errorWeight: "",
+            errorHeight: "Proszę wprowadzić poprawny wzrost"
+          });
+        }
       })
       .catch(error => {
         console.error(error);
@@ -266,17 +302,47 @@ export default class ModifyProfile extends Component {
                 value={this.state.userUserName}
                 style={styles.input}
               />
-              <Text style={styles.input_header}>E-mail</Text>
-              <TextInput
-                placeholder="E-mail"
-                placeholderTextColor="rgba(0,0,0,0.5)"
-                returKeyType="next"
-                onSubmitEditing={() => this.userOldPasswordInput.focus()}
-                onChangeText={email => this.setState({ UserEmail: email })}
-                value={this.state.userEmail}
-                ref={input => (this.userUserEmailInput = input)}
-                style={styles.input}
-              />
+              <Text style={styles.input_input_header}>E-mail</Text>
+              {this.state.errorUserName !=
+              "Proszę wpisać poprawny adres skrzynki pocztowej" ? (
+                <TextInput
+                  placeholder="E-mail"
+                  placeholderTextColor="rgba(0,0,0,0.5)"
+                  returKeyType="next"
+                  onSubmitEditing={() => this.userOldPasswordInput.focus()}
+                  onChangeText={email => this.setState({ UserEmail: email })}
+                  value={this.state.userEmail}
+                  ref={input => (this.userUserEmailInput = input)}
+                  style={styles.input_input}
+                />
+              ) : (
+                <TextInput
+                  placeholder="E-mail"
+                  placeholderTextColor="rgba(255,0,0,1.0)"
+                  returKeyType="next"
+                  onSubmitEditing={() => this.userOldPasswordInput.focus()}
+                  onChangeText={email => this.setState({ UserEmail: email })}
+                  value={this.state.userEmail}
+                  ref={input => (this.userUserEmailInput = input)}
+                  style={styles.input_error}
+                />
+              )}
+              {this.state.errorEmail !=
+              "Proszę wpisać poprawny adres skrzynki pocztowej" ? null : (
+                <HelperText
+                  type="error"
+                  padding="none"
+                  visible={
+                    this.state.errorEmail == "" ||
+                    this.state.errorEmail !=
+                      "Proszę wpisać poprawny adres skrzynki pocztowej"
+                      ? false
+                      : true
+                  }
+                >
+                  {this.state.errorEmail}
+                </HelperText>
+              )}
               <Text style={styles.input_header}>Stare hasło</Text>
               <TextInput
                 placeholder="Stare hasło"
@@ -300,32 +366,89 @@ export default class ModifyProfile extends Component {
                 onChangeText={new_password =>
                   this.setState({ userNewPassword: new_password })
                 }
-                value={this.state.userNewPassword}
                 ref={input => (this.userNewPasswordInput = input)}
                 style={styles.input}
               />
-              <Text style={styles.input_header}>Waga</Text>
-              <TextInput
-                placeholder="Waga (kg)"
-                placeholderTextColor="rgba(0,0,0,0.5)"
-                returKeyType="next"
-                onSubmitEditing={() => this.userHeightInput.focus()}
-                onChangeText={weight => this.setState({ userWeight: weight })}
-                value={this.state.userWeight}
-                ref={input => (this.userWeightInput = input)}
-                style={styles.input}
-              />
-              <Text style={styles.input_header}>Wzrost</Text>
-              <TextInput
-                placeholder="Wzrost (cm)"
-                placeholderTextColor="rgba(0,0,0,0.5)"
-                returKeyType="next"
-                onSubmitEditing={() => this.userHeightInput.focus()}
-                onChangeText={height => this.setState({ userHeight: height })}
-                value={this.state.userHeight}
-                ref={input => (this.userHeightInput = input)}
-                style={styles.input}
-              />
+              <Text style={styles.input_input_header}>Waga</Text>
+              {this.state.errorWeight != "Proszę wpisać poprawną wagę ciała" ? (
+                <TextInput
+                  placeholder="Waga (kg)"
+                  placeholderTextColor="rgba(0,0,0,0.5)"
+                  returKeyType="next"
+                  onSubmitEditing={() => this.userHeightInput.focus()}
+                  onChangeText={weight => this.setState({ userWeight: weight })}
+                  value={this.state.userWeight}
+                  ref={input => (this.userWeightInput = input)}
+                  style={styles.input_input}
+                />
+              ) : (
+                <TextInput
+                  placeholder="Waga (kg)"
+                  placeholderTextColor="rgba(255,0,0,1.0)"
+                  returKeyType="next"
+                  onSubmitEditing={() => this.userHeightInput.focus()}
+                  onChangeText={weight => this.setState({ userWeight: weight })}
+                  value={this.state.userWeight}
+                  ref={input => (this.userWeightInput = input)}
+                  style={styles.input_error}
+                />
+              )}
+              {this.state.errorWeight !=
+              "Proszę wpisać poprawną wagę ciała" ? null : (
+                <HelperText
+                  type="error"
+                  padding="none"
+                  visible={
+                    this.state.errorWeight == "" ||
+                    this.state.errorWeight !=
+                      "Proszę wpisać poprawną wagę ciała"
+                      ? false
+                      : true
+                  }
+                >
+                  {this.state.errorWeight}
+                </HelperText>
+              )}
+              <Text style={styles.input_input_header}>Wzrost</Text>
+              {this.state.errorWeight != "Proszę wprowadzić poprawny wzrost" ? (
+                <TextInput
+                  placeholder="Wzrost (cm)"
+                  placeholderTextColor="rgba(0,0,0,0.5)"
+                  returKeyType="next"
+                  onSubmitEditing={() => this.userHeightInput.focus()}
+                  onChangeText={height => this.setState({ userHeight: height })}
+                  value={this.state.userHeight}
+                  ref={input => (this.userHeightInput = input)}
+                  style={styles.input_input}
+                />
+              ) : (
+                <TextInput
+                  placeholder="Wzrost (cm)"
+                  placeholderTextColor="rgba(255,0,0,1.0)"
+                  returKeyType="next"
+                  onSubmitEditing={() => this.userHeightInput.focus()}
+                  onChangeText={height => this.setState({ userHeight: height })}
+                  value={this.state.userHeight}
+                  ref={input => (this.userHeightInput = input)}
+                  style={styles.input_error}
+                />
+              )}
+              {this.state.errorHeight !=
+              "Proszę wprowadzić poprawny wzrost" ? null : (
+                <HelperText
+                  type="error"
+                  padding="none"
+                  visible={
+                    this.state.errorHeight == "" ||
+                    this.state.errorHeight !=
+                      "Proszę wprowadzić poprawny wzrost"
+                      ? false
+                      : true
+                  }
+                >
+                  {this.state.errorHeight}
+                </HelperText>
+              )}
               <TouchableOpacity
                 onPress={this.userModifyFunction}
                 style={{
@@ -477,16 +600,53 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.2)",
-    marginBottom: 10,
+    marginBottom: 0,
     fontFamily: "Quicksand-Light",
     color: "rgba(0,0,0,0.5)",
     paddingHorizontal: 10
+  },
+  input_input: {
+    height: 40,
+    borderColor: "rgba(0,0,0,0.3)",
+    borderWidth: 1,
+    borderRadius: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    marginTop: 5,
+    fontFamily: "Quicksand-Light",
+    color: "rgba(0,0,0,0.5)",
+    paddingHorizontal: 10
+  },
+  input_error: {
+    height: 40,
+    borderColor: "rgba(255,0,0,1.0)",
+    borderWidth: 1,
+    borderRadius: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,0,0,0.05)",
+    marginBottom: 0,
+    fontFamily: "Quicksand-Light",
+    color: "rgba(255,0,0,1.0)",
+    paddingHorizontal: 10
+  },
+  healper_text: {
+    marginBottom: 5
   },
   input_header: {
     fontFamily: "Quicksand-Bold",
     color: "rgba(0,0,0,0.5)",
     fontSize: 10,
     marginLeft: 10,
-    marginBottom: 5
+    marginBottom: 10,
+    marginTop: 5
+  },
+  input_input_header: {
+    fontFamily: "Quicksand-Bold",
+    color: "rgba(0,0,0,0.5)",
+    fontSize: 10,
+    marginLeft: 10,
+    marginTop: 5
   }
 });

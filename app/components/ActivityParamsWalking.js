@@ -57,7 +57,7 @@ export default class ActivityParamsWalking extends Component {
           if (this.state.limitedSteps != "") {
             this.props.navigation.navigate("ActivityInfo", {
               id: this.state.userId,
-              backgroundImageSource: require("../../assets/images/cycling_background_opacity.jpg"),
+              backgroundImageSource: require("../../assets/images/walk_background_opacity.jpg"),
               activityType: this.state.activityType,
               name: this.state.name,
               limitedDistance: this.state.limitedDistance,
@@ -268,7 +268,7 @@ export default class ActivityParamsWalking extends Component {
                   <TextInput
                     placeholder="Limit kroków"
                     keyboardType="numeric"
-                    placeholderTextColor="rgba(0,0,0,0.5)"
+                    placeholderTextColor="rgba(255,0,0,1.0)"
                     returKeyType="next"
                     ref={input => (this.limitedStepsInput = input)}
                     onChangeText={limitedSteps =>

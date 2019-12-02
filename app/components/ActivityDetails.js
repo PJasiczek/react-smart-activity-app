@@ -190,7 +190,7 @@ const ActivityDetails = ({
                   contentInset={{ top: 20, bottom: 20 }}
                 />
                 <Text style={styles.height_increase}>
-                  {parseFloat(global.altitude).toFixed(2)} m n.p.m.{" "}
+                  {parseFloat(global.altitude).toFixed(2)} m
                 </Text>
               </View>
             </View>
@@ -217,7 +217,7 @@ const ActivityDetails = ({
                 <View style={styles.inner_top_right_container_heart_beat}>
                   <View style={styles.heart_beat_container}>
                     <Text style={styles.heart_beat}>
-                      {heart == 0 ? "--" : heart}
+                      {heart == 0 || heart == null ? "--" : heart}
                     </Text>
                     <Text style={styles.heart_beat_label}>bpm</Text>
                   </View>

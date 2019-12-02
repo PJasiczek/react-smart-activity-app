@@ -66,7 +66,7 @@ export default class ActivityInfo extends Component {
     this.manager = new BleManager();
     global.isActivityVisible = false;
     global.stoperActivityTime = "";
-    global.altitude = 0;
+    global.altitude = null;
     global.distance = 0;
     global.speed = 0;
     global.pace = 0;
@@ -111,9 +111,9 @@ export default class ActivityInfo extends Component {
       start_calories: 0,
       limitedCalories: this.props.navigation.state.params.limitedCalories,
       poolLengths: this.props.navigation.state.params.poolLengths,
-      heart: 0,
-      max_heart_beat: 0,
-      min_heart_beat: 0,
+      heart: null,
+      max_heart_beat: null,
+      min_heart_beat: null,
       isLoading: true,
       id: 0,
       iDay: true,
@@ -147,7 +147,6 @@ export default class ActivityInfo extends Component {
       stopwatchStart: !this.state.stopwatchStart,
       stopwatchReset: false
     });
-    global.isActivityVisible = true;
   }
 
   resetStopwatch() {
@@ -164,6 +163,8 @@ export default class ActivityInfo extends Component {
       String(hours) + ":" + String(minutes) + ":" + String(seconds);
     global.stoper =
       (Number(seconds) + 60 * Number(minutes)) / 3600 + Number(hours);
+    global.pace_stoper =
+      Number(seconds) / 60 + Number(minutes) + Number(hours) * 60;
   }
 
   componentDidMount() {
@@ -249,10 +250,10 @@ export default class ActivityInfo extends Component {
 
     if (Platform.OS === "ios") {
       this.manager.onStateChange(state => {
-        if (state === "PoweredOn") this.scanAndConnect();
+        if (state === "PoweredOn") this.startActivity();
       });
     } else {
-      this.scanAndConnect();
+      this.startActivity();
     }
   }
 
@@ -278,11 +279,10 @@ export default class ActivityInfo extends Component {
     this.setState({ info: message });
   }
 
-  scanAndConnect() {
+  startActivity() {
     this.manager.startDeviceScan(null, null, (error, device) => {
       this.info("Skanowanie...");
       console.log(device);
-
       if (error) {
         if (error.message == "BluetoothLE is unsupported on this device") {
           this.error("Bluetooth nie jest obsługiwane na tym urządzeniu");
@@ -290,16 +290,16 @@ export default class ActivityInfo extends Component {
           this.error(
             "Bluetooth jest wyłączony. Jeśli chcesz połączyć sie z Smartwatchem włącz go!"
           );
-        } else if (error.message == "Device was disconnected") {
-          this.error("Utracono połączenie z urządzeniem");
         } else {
-          this.error(error.message);
+          this.error(
+            "Utracono połączenie z urządzeniem! Zrestartuj połaczenie Bluetooth"
+          );
         }
         return;
       }
 
       if (device.name === "Mi Smart Band 4") {
-        this.info("Łączenie z " + device.name + "(" + device.id + ")");
+        this.info("Łączenie z " + device.name + " (" + device.id + ")");
         this.manager.stopDeviceScan();
         device
           .connect()
@@ -319,7 +319,16 @@ export default class ActivityInfo extends Component {
               this.info("Nasłuchiwanie...");
             },
             error => {
-              this.error(error.message);
+              if (
+                error.message ==
+                "Device " + device.name + " was disconnected"
+              ) {
+                this.error(
+                  "Bluetooth jest wyłączony. Jeśli chcesz połączyć sie z Smartwatchem włącz go!"
+                );
+              } else {
+                this.error(error.message);
+              }
             }
           );
       }
@@ -382,12 +391,45 @@ export default class ActivityInfo extends Component {
     );
     var distances =
       parseInt(distance_divided) * 256 + parseInt(distance_modulo);
-    var calories = converter.hexToDec(returnedDistanceValue.substring(18, 20));
+
+    var calories_modulo = converter.hexToDec(
+      returnedDistanceValue.substring(18, 20)
+    );
+    var calories_divided = converter.hexToDec(
+      returnedDistanceValue.substring(20, 22)
+    );
+
+    var calories = parseInt(calories_divided) * 256 + parseInt(calories_modulo);
+
+    const serviceHeart = "0000180d-0000-1000-8000-00805f9b34fb";
+    const characteristicWHeart = "00002a39-0000-1000-8000-00805f9b34fb";
+    const characteristicNHeart = "00002a37-0000-1000-8000-00805f9b34fb";
+
+    device.monitorCharacteristicForService(
+      serviceHeart,
+      characteristicNHeart,
+      (error, characteristicHeart) => {
+        if (error) {
+          this.error(error.message);
+          Toast.showShortBottom(error.message);
+          return;
+        }
+        const returnedHeartBeatValue = Buffer.from(
+          characteristicHeart.value,
+          "base64"
+        ).toString("hex");
+
+        var heart_beat = converter.hexToDec(returnedHeartBeatValue);
+        this.setState({ heart: heart_beat });
+      }
+    );
 
     this.setState({
       start_steps: steps,
       start_distance: distances,
       start_calories: calories,
+      max_heart_beat: this.state.heart,
+      min_heart_beat: this.state.heart,
       isActivityReady: true
     });
     this.startActivityTimer();
@@ -449,7 +491,15 @@ export default class ActivityInfo extends Component {
     );
     var distances =
       parseInt(distance_divided) * 256 + parseInt(distance_modulo);
-    var calories = converter.hexToDec(returnedDistanceValue.substring(18, 20));
+
+    var calories_modulo = converter.hexToDec(
+      returnedDistanceValue.substring(18, 20)
+    );
+    var calories_divided = converter.hexToDec(
+      returnedDistanceValue.substring(20, 22)
+    );
+
+    var calories = parseInt(calories_divided) * 256 + parseInt(calories_modulo);
 
     const serviceHeart = "0000180d-0000-1000-8000-00805f9b34fb";
     const characteristicWHeart = "00002a39-0000-1000-8000-00805f9b34fb";
@@ -478,7 +528,7 @@ export default class ActivityInfo extends Component {
     global.pace =
       global.distance == 0
         ? 0
-        : parseFloat(Number(global.stoper) / global.distance).toFixed(2);
+        : parseFloat(Number(global.pace_stoper) / global.distance).toFixed(2);
     global.speed =
       global.distance == 0
         ? 0
@@ -544,6 +594,7 @@ export default class ActivityInfo extends Component {
 
   startActivityTimer = () => {
     if (this.state.isWatchReady == false) {
+      global.isActivityVisible = true;
       let startActivityTimerId = setInterval(() => {
         var activityTimerCount = (
           Number(this.state.activityTimer) - 1
@@ -558,7 +609,6 @@ export default class ActivityInfo extends Component {
           });
           this.toggleStopwatch();
         }
-        global.isActivityVisible = true;
       }, 1000);
     }
   };
@@ -586,22 +636,25 @@ export default class ActivityInfo extends Component {
       })
     })
       .then(response => response.json())
-      .then(responseJson => {
+      .then(response => {
         this.setState({ confirmDialogVisible: false });
-        this.clearInterval(readCharacteristicsId);
-        this.clearInterval(startActivityTimerId);
-        this.clearInterval(fetchWeatherId);
-        this.clearActivityDetailsComponent();
+        global.isActivityVisible = false;
+        Toast.showShortBottom(response);
         this.props.navigation.navigate("ActivityHistory", {
           id: this.state.userId
         });
-        global.isActivityVisible = false;
-        Toast.showShortBottom(responseJson);
+        this.clearActivityDetailsComponent();
       })
       .catch(error => {
         console.error(error);
       });
   };
+
+  componentWillUnmount() {
+    this.clearInterval(startActivityTimerId);
+    this.clearInterval(fetchWeatherId);
+    this.clearInterval(readCharacteristicsId);
+  }
 
   _startUpdatingLocation = () => {
     this.locationSubscription = RNLocation.subscribeToLocationUpdates(
@@ -626,10 +679,14 @@ export default class ActivityInfo extends Component {
     this.toggleStopwatch();
   };
 
+  endActivityFunction = () => {
+    this.showDialog();
+    this.publishDataActivity();
+  };
+
   clearActivityDetailsComponent = () => {
-    global.isActivityVisible = false;
     global.stoperActivityTime = "";
-    global.altitude = 0;
+    global.altitude = null;
     global.distance = 0;
     global.speed = 0;
     global.pace = 0;
@@ -669,9 +726,9 @@ export default class ActivityInfo extends Component {
       start_calories: 0,
       limitedCalories: "",
       poolLengths: "",
-      heart: 0,
-      max_heart_beat: 0,
-      min_heart_beat: 0,
+      heart: null,
+      max_heart_beat: null,
+      min_heart_beat: null,
       isLoading: true,
       id: 0,
       iDay: true,

@@ -219,6 +219,25 @@ export default class Registration extends Component {
       });
   };
 
+  test = () => {
+    return fetch(
+      "http://jasiu1047.unixstorm.org/smartactivity/countries_pl.json"
+    )
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState(
+          {
+            isLoading: false,
+            dataSource: responseJson
+          },
+          function() {}
+        );
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
+
   componentDidMount() {
     return fetch(
       "http://jasiu1047.unixstorm.org/smartactivity/countries_pl.json"
