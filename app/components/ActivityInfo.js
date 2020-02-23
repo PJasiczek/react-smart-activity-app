@@ -402,7 +402,6 @@ export default class ActivityInfo extends Component {
     var calories = parseInt(calories_divided) * 256 + parseInt(calories_modulo);
 
     const serviceHeart = "0000180d-0000-1000-8000-00805f9b34fb";
-    const characteristicWHeart = "00002a39-0000-1000-8000-00805f9b34fb";
     const characteristicNHeart = "00002a37-0000-1000-8000-00805f9b34fb";
 
     device.monitorCharacteristicForService(
