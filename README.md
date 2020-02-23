@@ -10,12 +10,12 @@
     * [Stopwatch](#stopwatch)
     * [Weather](#weather)
     * [Activity route](#activity-route)
+* [Contact](#contact)
 
 ## Technologies
-Project is: _in progress_.
+* React native 
 
 ## Setup
-Project is: _in progress_.
 
 ## Screenshots
 
