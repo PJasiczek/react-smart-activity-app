@@ -18,6 +18,7 @@
 ## Setup
 
 ## Screenshots
+*
 
 ## User panel
 <img src="./img/1.png" width="360px" height="640px">
