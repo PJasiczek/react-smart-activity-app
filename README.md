@@ -20,6 +20,15 @@
 
 ## Setup
 
+### Generating the release APK
+```
+$ cd android
+$ ./gradlew bundleRelease
+```
+### Testing the app
+```
+$ react-native run-android --variant=release
+```
 ## Screenshots
 
 ## User panel
