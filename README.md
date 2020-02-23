@@ -18,12 +18,7 @@ Project is: _in progress_.
 Project is: _in progress_.
 
 ## Screenshots
-![Example screenshot] <img src="./img/1.png" width="522px" height="341px">
-![Example screenshot](./img/2.png)
-![Example screenshot](./img/3.png)
-![Example screenshot](./img/4.png)
-![Example screenshot](./img/5.png)
-![Example screenshot](./img/6.png)
+<img src="./img/1.png" width="522px" height="341px">
 
 ## Status
 Project is: _in progress_.
