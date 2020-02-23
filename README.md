@@ -18,16 +18,22 @@ Project is: _in progress_.
 Project is: _in progress_.
 
 ## Screenshots
+
 ## User panel
 <img src="./img/1.png" width="360px" height="640px">
+
 ## Activity info
 <img src="./img/2.png" width="360px" height="640px">
+
 ## Activity info
 <img src="./img/3.png" width="360px" height="640px">
+
 ## Stopwatch
 <img src="./img/4.png" width="360px" height="640px">
+
 ## Weather
 <img src="./img/5.png" width="360px" height="640px">
+
 ## Activity route
 <img src="./img/6.png" width="360px" height="640px">
 
