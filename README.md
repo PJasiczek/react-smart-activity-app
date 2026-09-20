@@ -1,8 +1,9 @@
 # react-smart-activity-app
->  Design of a mobile application using a sports band to monitor physical activity parameters from various types of sport disciplines with the possibility of setting individual user goals at the start of training.
+> A React Native mobile app for tracking physical activity via a fitness band — connects to a Mi Band 4 over Bluetooth to log workouts, and adds weather and GPS route data, with configurable training goals. Originally developed as my engineering thesis project.
 
 ## Table of contents
 * [Technologies](#technologies)
+* [Features](#features)
 * [Setup](#setup)
 * [Screenshots](#screenshots)
     * [User panel](#user-panel)
@@ -11,12 +12,18 @@
     * [Stopwatch](#stopwatch)
     * [Weather](#weather)
     * [Activity route](#activity-route)
-* [Contact](#contact)
+* [Status](#status)
 
 ## Technologies
-   To build the mobile application, the React Native framework version 0.60.4 created and still developed by Facebook was used. It allows you to create applications for iOS and Android in JavaScript.
-   
-   The project also uses PHP in a version higher than version 5.4.45. It was implemented with the help of its API, providing resources and functionalities allowing for the placement and use of data stored in the MySQL relational database version 5.6.37-82.2. To test the functionality of the application, access to hosting containing one 2 GB MySQL database was purchased.
+* React Native 0.60.4 — a single JavaScript codebase targeting both iOS and Android
+* A PHP/MySQL REST backend — see [smart-activity-app-api](https://github.com/PJasiczek/smart-activity-app-api)
+
+## Features
+* Bluetooth connection to a Mi Band 4 to pull workout data
+* Multiple activity/workout types, with per-activity details (including heart rate)
+* Activity history and stopwatch
+* Weather and GPS route shown alongside a workout
+* Account registration and login, with input validation
 
 ## Setup
 
@@ -29,6 +36,7 @@ $ ./gradlew bundleRelease
 ```
 $ react-native run-android --variant=release
 ```
+
 ## Screenshots
 ### User panel
 <img src="./img/1.png" width="360px" height="640px">
@@ -49,7 +57,6 @@ $ react-native run-android --variant=release
 <img src="./img/6.png" width="360px" height="640px">
 
 ## Status
-Project is: _in progress_.
+**On hold** — not currently under active development.
 
-## Contact
-Created by [@PJasiczek](https://piotrjasiczek.pl/) - feel free to contact me!
+Built between mid-2019 and early 2020 as my engineering thesis project.
