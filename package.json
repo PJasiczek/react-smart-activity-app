@@ -17,7 +17,7 @@
     "moment": "^2.24.0",
     "prop-types": "^15.7.2",
     "react": "16.8.6",
-    "react-native": "0.60.4",
+    "react-native": "0.62.3",
     "react-native-ble-manager": "^6.6.8",
     "react-native-ble-plx": "^1.0.3",
     "react-native-bluetooth-serial-next": "^1.2.3",
